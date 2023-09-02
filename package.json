@@ -1,0 +1,67 @@
+{
+  "name": "@vited/core",
+  "version": "0.0.1",
+  "description": " Core function and framework of Vited ",
+  "keywords": [
+    "vite",
+    "node",
+    "webpack",
+    "rollup",
+    "build",
+    "lint",
+    "test",
+    "eslint",
+    "prettier",
+    "esbuild",
+    "jest",
+    "jsdom"
+  ],
+  "homepage": "https://github.com/vitedjs/core#readme",
+  "bugs": {
+    "url": "https://github.com/vitedjs/core/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitedjs/core.git"
+  },
+  "funding": "https://github.com/sponsors/vitedjs",
+  "license": "MIT",
+  "author": {
+    "name": "Guo Yunhe",
+    "email": "i@guoyunhe.me"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node-scripts build",
+    "format": "node-scripts format",
+    "lint": "node-scripts lint",
+    "test": "node-scripts test",
+    "watch": "node-scripts watch"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true
+  },
+  "eslintConfig": {
+    "extends": "@guoyunhe/node-scripts"
+  },
+  "jest": {
+    "preset": "@guoyunhe/node-scripts"
+  },
+  "devDependencies": {
+    "@guoyunhe/node-scripts": "^2.2.0",
+    "@tsconfig/node20": "^1.0.1",
+    "@tsconfig/strictest": "^2.0.1",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "typescript": "^5.1.3"
+  }
+}
