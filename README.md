@@ -11,7 +11,6 @@ import { defineConfig } from '@vited/core';
 
 export default defineConfig({
   docs: {
-    root: './docs',
     title: 'My Cool Library',
     supportedLocales: ['en', 'zh'],
     theme: '@vited/theme-mantine',
@@ -19,11 +18,11 @@ export default defineConfig({
 });
 ```
 
-`docs.root` is relative to the Vite project root. Vited discovers `.jsx`, `.tsx`,
-`.md`, and `.mdx` recursively. Directory names form route segments,
-`README.md` is the directory index, and a supported locale suffix such as
-`guide.zh.md` selects that locale. The first configured locale uses the
-unprefixed route; other locales use a `/<locale>/` prefix. For example,
+Vited reads documents from the `docs` directory under the Vite project root.
+Vited discovers `.jsx`, `.tsx`, `.md`, and `.mdx` recursively. Directory
+names form route segments, `README.md` is the directory index, and a supported
+locale suffix such as `guide.zh.md` selects that locale. The first configured
+locale uses the unprefixed route; other locales use a `/<locale>/` prefix. For example,
 `README.zh.md` is available at `/zh/`. Markdown frontmatter is available as
 each page's `frontmatter`; its `title` becomes the page title.
 

@@ -8,13 +8,13 @@ describe('defineConfig()', () => {
   it('preserves Vite options and adds the Vited plugin', () => {
     const config = defineConfig({
       base: '/manual/',
-      docs: { root: './handbook', supportedLocales: ['en', 'zh'] },
+      docs: { supportedLocales: ['en', 'zh'] },
     });
 
     expect(config.base).toBe('/manual/');
     expect(config.resolve?.dedupe).toEqual(['react', 'react-dom']);
     expect(config.plugins).toHaveLength(1);
-    expect(config.docs?.root).toBe('./handbook');
+    expect(config.docs?.supportedLocales).toEqual(['en', 'zh']);
   });
 
   it('keeps existing Vite dedupe entries', () => {

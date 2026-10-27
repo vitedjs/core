@@ -30,7 +30,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     name: 'vited',
     enforce: 'pre',
     async configResolved(resolvedConfig) {
-      docsRoot = path.resolve(resolvedConfig.root, docs.root ?? './docs');
+      docsRoot = path.resolve(resolvedConfig.root, 'docs');
       packageJsonPath = path.join(resolvedConfig.root, 'package.json');
       packageJSON = await readPackageJson(packageJsonPath);
     },

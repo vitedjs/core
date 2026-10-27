@@ -15,10 +15,11 @@ title: 快速开始
 
 ```ts
 docs: {
-  root: './docs',
   supportedLocales: ['en', 'zh'],
 }
 ```
+
+Vited 从项目根目录下的 `docs` 目录读取文档。
 
 `README.zh.md` 是首页的中文翻译，`guide/README.zh.md` 是本指南的中文翻译。
 英文页面使用默认路由，中文页面使用 `/zh/` 前缀，例如 `/zh/guide`。

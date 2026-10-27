@@ -21,11 +21,6 @@ export interface UserConfig extends ViteUserConfig {
 
 export interface DocsConfig {
   /**
-   * Directory containing documentation files, relative to the Vite root.
-   * @default './docs'
-   */
-  root?: string;
-  /**
    * Site title. If not specified, name from package.json will be used.
    */
   title?: string;

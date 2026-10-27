@@ -35,7 +35,6 @@ describe('vitedPlugin()', () => {
         configFile: false,
         root,
         plugins: [vitedPlugin({
-          root: './docs',
           supportedLocales: ['en', 'zh'],
           theme: path.join(root, 'theme.mjs'),
         })],

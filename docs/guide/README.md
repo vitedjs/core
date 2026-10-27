@@ -16,10 +16,11 @@ translated document:
 
 ```ts
 docs: {
-  root: './docs',
   supportedLocales: ['en', 'zh'],
 }
 ```
+
+Vited reads documentation from the `docs` directory under the project root.
 
 Fenced code blocks are syntax-highlighted by the default Mantine theme when
 their language is specified on the fence, for example TypeScript or JavaScript.
