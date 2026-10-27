@@ -32,7 +32,7 @@ automatically.
 ## Development
 
 ```bash
-npm install
-npm test
-npm run build
+pnpm install
+pnpm test
+pnpm build
 ```
