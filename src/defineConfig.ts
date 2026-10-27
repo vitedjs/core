@@ -1,32 +1,60 @@
-import { UserConfig as ViteUserConfig } from 'vite';
+import type { UserConfig as ViteUserConfig } from 'vite';
+import { vitedPlugin } from './plugin';
 
-export function defineConfig(config: UserConfig) {
-  return config;
+export function defineConfig(config: UserConfig): UserConfig {
+  return {
+    ...config,
+    plugins: [...(config.plugins ?? []), vitedPlugin(config.docs)],
+  };
 }
 
 export interface UserConfig extends ViteUserConfig {
   /**
    * Configuration of the generated document website.
    */
-  docs?: {
-    /**
-     * Site title. If not specified, name from package.json will be used.
-     */
-    title?: string;
-    /**
-     * Site description. If not specified, description from package.json will be used.
-     */
-    description?: string;
-    /**
-     * The base URL where the site root is located.
-     * @default '/'
-     */
-    baseURL?: string;
-    /**
-     * Sidebar menu entries. If not specified, vited will try to parse `docs/` folder.
-     */
-    menu?: MenuEntry[];
-  };
+  docs?: DocsConfig;
+}
+
+export interface DocsConfig {
+  /**
+   * Directory containing documentation files, relative to the Vite root.
+   * @default './docs'
+   */
+  root?: string;
+  /**
+   * Site title. If not specified, name from package.json will be used.
+   */
+  title?: string;
+  /**
+   * Site description. If not specified, description from package.json will be used.
+   */
+  description?: string;
+  /**
+   * Locales recognized in document filenames such as `intro.zh.md`.
+   */
+  supportedLocales?: string[];
+  /**
+   * Theme package whose default export is a React component.
+   * @default '@vited/theme-mantine'
+   */
+  theme?: string;
+  /**
+   * The base URL where the site root is located.
+   * @default '/'
+   */
+  baseURL?: string;
+  /**
+   * Sidebar menu entries. If not specified, Vited builds the menu from docs.
+   */
+  menu?: MenuEntry[];
+}
+
+export interface DocumentPage {
+  path: string;
+  locale: string;
+  title: string;
+  file: string;
+  frontmatter: Record<string, unknown>;
 }
 
 export interface MenuEntry {

@@ -1,21 +1,8 @@
 {
   "name": "@vited/core",
-  "version": "0.0.1",
-  "description": " Core function and framework of Vited ",
-  "keywords": [
-    "vite",
-    "node",
-    "webpack",
-    "rollup",
-    "build",
-    "lint",
-    "test",
-    "eslint",
-    "prettier",
-    "esbuild",
-    "jest",
-    "jsdom"
-  ],
+  "version": "0.1.0",
+  "description": "Core Vite integration and documentation pipeline for Vited",
+  "keywords": ["vite", "react", "documentation", "mdx"],
   "homepage": "https://github.com/vitedjs/core#readme",
   "bugs": {
     "url": "https://github.com/vitedjs/core/issues"
@@ -24,47 +11,50 @@
     "type": "git",
     "url": "git+https://github.com/vitedjs/core.git"
   },
-  "funding": "https://github.com/sponsors/guoyunhe",
   "license": "MIT",
   "author": {
     "name": "Guo Yunhe",
     "email": "i@guoyunhe.me"
   },
   "type": "module",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
-  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": ["dist", "CHANGELOG.md", "LICENSE", "README.md"],
   "scripts": {
-    "build": "node-scripts build",
-    "format": "node-scripts format",
-    "lint": "node-scripts lint",
-    "test": "node-scripts test",
-    "watch": "node-scripts watch"
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true
   },
-  "eslintConfig": {
-    "extends": "@guoyunhe/node-scripts"
+  "dependencies": {
+    "@mdx-js/mdx": "^3.1.1",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.1.2",
+    "sanitize-html": "^2.17.0"
   },
-  "jest": {
-    "preset": "@guoyunhe/node-scripts"
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "vite": "^8.3.5"
   },
   "devDependencies": {
-    "@guoyunhe/node-scripts": "^2.2.0",
-    "@tsconfig/node20": "^1.0.2",
-    "@tsconfig/strictest": "^2.0.2",
-    "@types/jest": "^29.5.4",
-    "@types/node": "^20.5.8",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "vite": "^4.4.9"
+    "@types/node": "^22.15.30",
+    "@types/sanitize-html": "^2.16.0",
+    "tsdown": "^0.23.2",
+    "typescript": "^5.8.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   }
 }

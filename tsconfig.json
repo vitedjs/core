@@ -1,8 +1,11 @@
 {
-  "extends": ["@tsconfig/node20/tsconfig.json", "@tsconfig/strictest/tsconfig.json"],
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "types": ["node", "jest", "@guoyunhe/node-scripts/global"]
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node", "vitest/globals"]
   },
   "include": ["src"]
 }

@@ -1,0 +1,160 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { compile } from '@mdx-js/mdx';
+import matter from 'gray-matter';
+import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
+import type { Plugin } from 'vite';
+import type { DocsConfig, DocumentPage } from './defineConfig';
+import { scanDocs } from './documents';
+
+const pagesModuleId = 'virtual:vited/pages';
+const clientModuleId = 'virtual:vited/client';
+const resolvedPagesModuleId = `\0${pagesModuleId}`;
+const resolvedClientModuleId = `\0${clientModuleId}`;
+const builtClientEntry = fileURLToPath(new URL('./clientEntry.mjs', import.meta.url));
+const sourceClientEntry = fileURLToPath(new URL('./clientEntry.ts', import.meta.url));
+
+export function vitedPlugin(docs: DocsConfig = {}): Plugin {
+  let docsRoot: string;
+  let pages: DocumentPage[] = [];
+
+  return {
+    name: 'vited',
+    enforce: 'pre',
+    configResolved(resolvedConfig) {
+      docsRoot = path.resolve(resolvedConfig.root, docs.root ?? './docs');
+    },
+    async buildStart() {
+      pages = await scanDocs(docsRoot, docs.supportedLocales);
+      for (const page of pages) {
+        this.addWatchFile(page.file);
+      }
+    },
+    resolveId(id) {
+      if (id === pagesModuleId) return resolvedPagesModuleId;
+      if (id === clientModuleId) return resolvedClientModuleId;
+      return null;
+    },
+    async load(id) {
+      if (id === resolvedPagesModuleId) {
+        pages = await scanDocs(docsRoot, docs.supportedLocales);
+        return createPagesModule(pages);
+      }
+      if (id === resolvedClientModuleId) {
+        return createClientModule(docs);
+      }
+      return null;
+    },
+    async transform(source, id) {
+      const extension = path.extname(id).toLowerCase();
+      const relativePath = path.relative(docsRoot, id);
+      if (
+        !['.md', '.mdx'].includes(extension) ||
+        relativePath.startsWith('..') ||
+        path.isAbsolute(relativePath)
+      ) {
+        return null;
+      }
+
+      const parsed = matter(source);
+      const frontmatter = JSON.stringify(parsed.data);
+      if (extension === '.mdx') {
+        const compiled = await compile(parsed.content);
+        return `${String(compiled)}\nexport const frontmatter = ${frontmatter};`;
+      }
+
+      const html = marked.parse(parsed.content, { async: false });
+      if (typeof html !== 'string') {
+        throw new Error(`Failed to render Markdown document: ${id}`);
+      }
+      const safeHtml = sanitizeHtml(html);
+      return `
+        import React from 'react';
+        export const frontmatter = ${frontmatter};
+        export default function MarkdownDocument() {
+          return React.createElement('div', {
+            className: 'vited-markdown',
+            dangerouslySetInnerHTML: { __html: ${JSON.stringify(safeHtml)} }
+          });
+        }
+      `;
+    },
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        const withRoot = /id=["']root["']/.test(html)
+          ? html
+          : html.replace(/<body([^>]*)>/i, '<body$1><div id="root"></div>');
+        return {
+          html: withRoot,
+          tags: [
+            {
+              tag: 'script',
+              attrs: {
+                type: 'module',
+                src: toFileUrl(existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry),
+              },
+              injectTo: 'body',
+            },
+          ],
+        };
+      },
+    },
+    configureServer(server) {
+      server.watcher.add(docsRoot);
+    },
+    async handleHotUpdate(context) {
+      const relativePath = path.relative(docsRoot, context.file);
+      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return;
+      pages = await scanDocs(docsRoot, docs.supportedLocales);
+      const pagesModule = context.server.moduleGraph.getModuleById(resolvedPagesModuleId);
+      if (pagesModule) {
+        context.server.moduleGraph.invalidateModule(pagesModule);
+      }
+      return pagesModule ? [pagesModule] : undefined;
+    },
+  };
+}
+
+function createPagesModule(pages: DocumentPage[]): string {
+  const imports = pages.map((page, index) =>
+    `import * as doc${index} from ${JSON.stringify(page.file)};`,
+  );
+  const entries = pages.map((page, index) => `{
+    path: ${JSON.stringify(page.path)},
+    locale: ${JSON.stringify(page.locale)},
+    title: typeof doc${index}.frontmatter?.title === 'string'
+      ? doc${index}.frontmatter.title
+      : ${JSON.stringify(page.title)},
+    frontmatter: doc${index}.frontmatter ?? {},
+    component: doc${index}.default
+  }`);
+
+  return `${imports.join('\n')}\nexport default [${entries.join(',\n')}];`;
+}
+
+function createClientModule(docs: DocsConfig): string {
+  const theme = docs.theme ?? '@vited/theme-mantine';
+  return `
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import Theme from ${JSON.stringify(theme)};
+    import pages from '${pagesModuleId}';
+    const target = document.getElementById('root');
+    if (!target) throw new Error('Vited could not find the #root element in index.html');
+    createRoot(target).render(React.createElement(Theme, {
+      title: ${JSON.stringify(docs.title ?? '')},
+      description: ${JSON.stringify(docs.description ?? '')},
+      supportedLocales: ${JSON.stringify(docs.supportedLocales ?? [])},
+      menu: ${JSON.stringify(docs.menu ?? null)},
+      pages,
+      baseURL: ${JSON.stringify(docs.baseURL ?? '/')}
+    }));
+  `;
+}
+
+function toFileUrl(file: string): string {
+  return `/@fs/${file.replace(/\\/g, '/').replace(/^\/+/, '')}`;
+}
