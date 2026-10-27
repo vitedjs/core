@@ -13,6 +13,11 @@ describe('vitedPlugin()', () => {
     try {
       await mkdir(path.join(docsRoot, 'guide'), { recursive: true });
       await writeFile(path.join(root, 'index.html'), '<html><body></body></html>');
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({
+        name: 'vited-test-site',
+        repository: 'https://github.com/vitedjs/vited-test-site.git',
+        funding: { type: 'github', url: 'https://github.com/sponsors/vitedjs' },
+      }));
       await writeFile(
         path.join(root, 'theme.mjs'),
         'export default function Theme() { return null; }',
@@ -52,6 +57,9 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('Getting started');
       expect(bundle).toContain('开始');
       expect(bundle).toContain('Unique searchable phrase.');
+      expect(bundle).toContain('name:`vited-test-site`');
+      expect(bundle).toContain('https://github.com/vitedjs/vited-test-site.git');
+      expect(bundle).toContain('https://github.com/sponsors/vitedjs');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

@@ -11,6 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/vitedjs/core.git"
   },
+  "funding": "https://ko-fi.com/guoyunhe",
   "license": "MIT",
   "author": {
     "name": "Guo Yunhe",

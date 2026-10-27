@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compile } from '@mdx-js/mdx';
@@ -21,13 +22,17 @@ const sourceClientEntry = fileURLToPath(new URL('./clientEntry.ts', import.meta.
 
 export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let docsRoot: string;
+  let packageJsonPath: string;
+  let packageJSON: Record<string, unknown> = {};
   let pages: DocumentPage[] = [];
 
   return {
     name: 'vited',
     enforce: 'pre',
-    configResolved(resolvedConfig) {
+    async configResolved(resolvedConfig) {
       docsRoot = path.resolve(resolvedConfig.root, docs.root ?? './docs');
+      packageJsonPath = path.join(resolvedConfig.root, 'package.json');
+      packageJSON = await readPackageJson(packageJsonPath);
     },
     async buildStart() {
       pages = await scanDocs(docsRoot, docs.supportedLocales);
@@ -52,7 +57,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         return `export default ${JSON.stringify(searchIndex)};`;
       }
       if (id === resolvedClientModuleId) {
-        return createClientModule(docs);
+        return createClientModule(docs, packageJSON);
       }
       return null;
     },
@@ -113,8 +118,19 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     },
     configureServer(server) {
       server.watcher.add(docsRoot);
+      server.watcher.add(packageJsonPath);
     },
     async handleHotUpdate(context) {
+      if (context.file === packageJsonPath) {
+        packageJSON = await readPackageJson(packageJsonPath);
+        const clientModule = context.server.moduleGraph.getModuleById(resolvedClientModuleId);
+        if (clientModule) {
+          context.server.moduleGraph.invalidateModule(clientModule);
+          return [clientModule];
+        }
+        return;
+      }
+
       const relativePath = path.relative(docsRoot, context.file);
       if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return;
       pages = await scanDocs(docsRoot, docs.supportedLocales);
@@ -149,7 +165,10 @@ function createPagesModule(pages: DocumentPage[]): string {
   return `${imports.join('\n')}\nexport default [${entries.join(',\n')}];`;
 }
 
-function createClientModule(docs: DocsConfig): string {
+function createClientModule(
+  docs: DocsConfig,
+  packageJSON: Record<string, unknown>,
+): string {
   const theme = docs.theme ?? '@vited/theme-mantine';
   return `
     import React from 'react';
@@ -164,11 +183,41 @@ function createClientModule(docs: DocsConfig): string {
       description: ${JSON.stringify(docs.description ?? '')},
       supportedLocales: ${JSON.stringify(docs.supportedLocales ?? [])},
       menu: ${JSON.stringify(docs.menu ?? null)},
+      packageJSON: ${JSON.stringify(packageJSON)},
       pages,
       searchIndex,
       baseURL: ${JSON.stringify(docs.baseURL ?? '/')}
     }));
   `;
+}
+
+async function readPackageJson(file: string): Promise<Record<string, unknown>> {
+  let source: string;
+  try {
+    source = await readFile(file, 'utf8');
+  } catch (error) {
+    if (isMissingFileError(error)) return {};
+    throw new Error(`Failed to read project package.json at ${file}`, { cause: error });
+  }
+
+  let value: unknown;
+  try {
+    value = JSON.parse(source);
+  } catch (error) {
+    throw new Error(`Invalid project package.json at ${file}`, { cause: error });
+  }
+  if (!isRecord(value)) {
+    throw new Error(`Project package.json must contain a JSON object: ${file}`);
+  }
+  return value;
+}
+
+function isMissingFileError(error: unknown): boolean {
+  return error instanceof Error && 'code' in error && error.code === 'ENOENT';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function toFileUrl(file: string): string {
