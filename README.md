@@ -33,6 +33,7 @@ automatically.
 
 ```bash
 pnpm install
+pnpm dev
 pnpm test
 pnpm build
 ```

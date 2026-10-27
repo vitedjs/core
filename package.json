@@ -37,6 +37,8 @@
   },
   "files": ["dist", "CHANGELOG.md", "LICENSE", "README.md"],
   "scripts": {
+    "predev": "pnpm build && pnpm --dir ../cli build && pnpm --dir ../theme-mantine build",
+    "dev": "vited dev",
     "build": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest"

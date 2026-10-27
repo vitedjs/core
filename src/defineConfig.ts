@@ -4,6 +4,10 @@ import { vitedPlugin } from './plugin';
 export function defineConfig(config: UserConfig): UserConfig {
   return {
     ...config,
+    resolve: {
+      ...config.resolve,
+      dedupe: [...new Set([...(config.resolve?.dedupe ?? []), 'react', 'react-dom'])],
+    },
     plugins: [...(config.plugins ?? []), vitedPlugin(config.docs)],
   };
 }

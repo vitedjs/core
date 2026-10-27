@@ -12,8 +12,17 @@ describe('defineConfig()', () => {
     });
 
     expect(config.base).toBe('/manual/');
+    expect(config.resolve?.dedupe).toEqual(['react', 'react-dom']);
     expect(config.plugins).toHaveLength(1);
     expect(config.docs?.root).toBe('./handbook');
+  });
+
+  it('keeps existing Vite dedupe entries', () => {
+    const config = defineConfig({
+      resolve: { dedupe: ['some-library', 'react'] },
+    });
+
+    expect(config.resolve?.dedupe).toEqual(['some-library', 'react', 'react-dom']);
   });
 });
 
