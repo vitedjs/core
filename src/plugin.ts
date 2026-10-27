@@ -83,11 +83,24 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       if (typeof html !== 'string') {
         throw new Error(`Failed to render Markdown document: ${id}`);
       }
-      const safeHtml = sanitizeHtml(html);
+      const safeHtml = sanitizeHtml(html, {
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          code: ['class'],
+        },
+        allowedClasses: {
+          code: [/^language-[\w+#.-]+$/],
+        },
+      });
       return `
         import React from 'react';
         export const frontmatter = ${frontmatter};
-        export default function MarkdownDocument() {
+        export default function MarkdownDocument({ components = {} }) {
+          if (typeof components.html === 'function') {
+            return React.createElement(components.html, {
+              html: ${JSON.stringify(safeHtml)}
+            });
+          }
           return React.createElement('div', {
             className: 'vited-markdown',
             dangerouslySetInnerHTML: { __html: ${JSON.stringify(safeHtml)} }

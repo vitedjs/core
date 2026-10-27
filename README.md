@@ -27,6 +27,11 @@ unprefixed route; other locales use a `/<locale>/` prefix. For example,
 `README.zh.md` is available at `/zh/`. Markdown frontmatter is available as
 each page's `frontmatter`; its `title` becomes the page title.
 
+Fenced code blocks in Markdown and MDX are syntax-highlighted by the selected
+theme when a language is specified on the fence (for example, TypeScript or
+JavaScript). The default Mantine theme uses Shiki with `@mantine/code-highlight`
+and provides copy controls and light/dark color schemes.
+
 Vited passes the project's `package.json` object to the theme as `packageJSON`.
 The default Mantine theme uses its `repository` and `funding` fields for
 optional GitHub and Donate links in the header.

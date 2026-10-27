@@ -21,6 +21,9 @@ docs: {
 }
 ```
 
+Fenced code blocks are syntax-highlighted by the default Mantine theme when
+their language is specified on the fence, for example TypeScript or JavaScript.
+
 `README.zh.md` translates the home page and `guide/README.zh.md` translates
 this guide. English uses the unprefixed route, while Chinese routes use the
 `/zh/` prefix, such as `/zh/guide`.

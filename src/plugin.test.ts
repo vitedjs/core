@@ -24,11 +24,11 @@ describe('vitedPlugin()', () => {
       );
       await writeFile(
         path.join(docsRoot, 'README.md'),
-        '---\ntitle: Welcome\n---\n# Documentation home',
+        '---\ntitle: Welcome\n---\n# Documentation home\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
       await writeFile(
         path.join(docsRoot, 'guide', 'start.zh.mdx'),
-        '---\ntitle: 开始\n---\n# Getting started\n\nUnique searchable phrase.',
+        '---\ntitle: 开始\n---\n# Getting started\n\nUnique searchable phrase.\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
       );
 
       await build({
@@ -60,6 +60,10 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('name:`vited-test-site`');
       expect(bundle).toContain('https://github.com/vitedjs/vited-test-site.git');
       expect(bundle).toContain('https://github.com/sponsors/vitedjs');
+      expect(bundle).toContain('language-js');
+      expect(bundle).toContain('language-c#');
+      expect(bundle).toContain('markdownValue');
+      expect(bundle).toContain('mdxValue');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

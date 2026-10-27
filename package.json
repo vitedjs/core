@@ -2,7 +2,12 @@
   "name": "@vited/core",
   "version": "0.1.0",
   "description": "Core Vite integration and documentation pipeline for Vited",
-  "keywords": ["vite", "react", "documentation", "mdx"],
+  "keywords": [
+    "vite",
+    "react",
+    "documentation",
+    "mdx"
+  ],
   "homepage": "https://github.com/vitedjs/core#readme",
   "bugs": {
     "url": "https://github.com/vitedjs/core/issues"
@@ -36,10 +41,15 @@
       "import": "./dist/index.mjs"
     }
   },
-  "files": ["dist", "CHANGELOG.md", "LICENSE", "README.md"],
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "predev": "pnpm build && pnpm --dir ../cli build && pnpm --dir ../theme-mantine build",
-    "dev": "vited dev",
+    "dev": "vited dev --force",
     "build": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -60,10 +70,10 @@
     "vite": "^8.3.5"
   },
   "devDependencies": {
-    "@vited/cli": "link:../cli",
-    "@vited/theme-mantine": "link:../theme-mantine",
     "@types/node": "^22.15.30",
     "@types/sanitize-html": "^2.16.0",
+    "@vited/cli": "link:../cli",
+    "@vited/theme-mantine": "link:../theme-mantine",
     "tsdown": "^0.23.2",
     "typescript": "^5.8.3",
     "vite": "^8.3.5",
