@@ -7,5 +7,6 @@ export default defineConfig({
   docs: {
     root: './docs',
     title: 'Vited Core',
+    supportedLocales: ['en', 'zh'],
   },
 });
