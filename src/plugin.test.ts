@@ -23,7 +23,7 @@ describe('vitedPlugin()', () => {
       );
       await writeFile(
         path.join(docsRoot, 'guide', 'start.zh.mdx'),
-        '---\ntitle: 开始\n---\n# Getting started',
+        '---\ntitle: 开始\n---\n# Getting started\n\nUnique searchable phrase.',
       );
 
       await build({
@@ -51,6 +51,7 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('Documentation home');
       expect(bundle).toContain('Getting started');
       expect(bundle).toContain('开始');
+      expect(bundle).toContain('Unique searchable phrase.');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

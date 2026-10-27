@@ -8,11 +8,14 @@ import sanitizeHtml from 'sanitize-html';
 import type { Plugin } from 'vite';
 import type { DocsConfig, DocumentPage } from './defineConfig';
 import { scanDocs } from './documents';
+import { createSearchIndex } from './search-index';
 
 const pagesModuleId = 'virtual:vited/pages';
 const clientModuleId = 'virtual:vited/client';
+const searchModuleId = 'virtual:vited/search-index';
 const resolvedPagesModuleId = `\0${pagesModuleId}`;
 const resolvedClientModuleId = `\0${clientModuleId}`;
+const resolvedSearchModuleId = `\0${searchModuleId}`;
 const builtClientEntry = fileURLToPath(new URL('./clientEntry.mjs', import.meta.url));
 const sourceClientEntry = fileURLToPath(new URL('./clientEntry.ts', import.meta.url));
 
@@ -35,12 +38,18 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     resolveId(id) {
       if (id === pagesModuleId) return resolvedPagesModuleId;
       if (id === clientModuleId) return resolvedClientModuleId;
+      if (id === searchModuleId) return resolvedSearchModuleId;
       return null;
     },
     async load(id) {
       if (id === resolvedPagesModuleId) {
         pages = await scanDocs(docsRoot, docs.supportedLocales);
         return createPagesModule(pages);
+      }
+      if (id === resolvedSearchModuleId) {
+        pages = await scanDocs(docsRoot, docs.supportedLocales);
+        const searchIndex = await createSearchIndex(pages);
+        return `export default ${JSON.stringify(searchIndex)};`;
       }
       if (id === resolvedClientModuleId) {
         return createClientModule(docs);
@@ -110,10 +119,15 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return;
       pages = await scanDocs(docsRoot, docs.supportedLocales);
       const pagesModule = context.server.moduleGraph.getModuleById(resolvedPagesModuleId);
-      if (pagesModule) {
-        context.server.moduleGraph.invalidateModule(pagesModule);
+      const searchModule = context.server.moduleGraph.getModuleById(resolvedSearchModuleId);
+      for (const module of [pagesModule, searchModule]) {
+        if (module) context.server.moduleGraph.invalidateModule(module);
       }
-      return pagesModule ? [pagesModule] : undefined;
+      return [...new Set([
+        ...context.modules,
+        pagesModule,
+        searchModule,
+      ].filter((module) => module !== undefined))];
     },
   };
 }
@@ -142,6 +156,7 @@ function createClientModule(docs: DocsConfig): string {
     import { createRoot } from 'react-dom/client';
     import Theme from ${JSON.stringify(theme)};
     import pages from '${pagesModuleId}';
+    import searchIndex from '${searchModuleId}';
     const target = document.getElementById('root');
     if (!target) throw new Error('Vited could not find the #root element in index.html');
     createRoot(target).render(React.createElement(Theme, {
@@ -150,6 +165,7 @@ function createClientModule(docs: DocsConfig): string {
       supportedLocales: ${JSON.stringify(docs.supportedLocales ?? [])},
       menu: ${JSON.stringify(docs.menu ?? null)},
       pages,
+      searchIndex,
       baseURL: ${JSON.stringify(docs.baseURL ?? '/')}
     }));
   `;

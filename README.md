@@ -27,6 +27,10 @@ unprefixed route; other locales use a `/<locale>/` prefix. For example,
 `README.zh.md` is available at `/zh/`. Markdown frontmatter is available as
 each page's `frontmatter`; its `title` becomes the page title.
 
+The default Mantine theme also provides local document search. Vited builds a
+search index from Markdown and MDX titles and text; results are scoped to the
+selected locale. Open search with the Search button or `Ctrl+K` / `⌘K`.
+
 The [development guide](./docs/guide/README.md) demonstrates nested pages and
 English/Chinese documentation.
 
