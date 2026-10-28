@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Add an original Vited SVG favicon to the default documentation HTML shell.
+
 ## 0.1.1 - 2026-10-28
 
 ### Fixed

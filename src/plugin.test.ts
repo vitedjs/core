@@ -35,6 +35,8 @@ describe('vitedPlugin()', () => {
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
       expect(html).toContain('<title>vited-test-site</title>');
+      expect(html).toContain('rel="icon" type="image/svg+xml"');
+      expect(html).toContain('data:image/svg+xml,');
       expect(html).toContain('id="root"');
       expect(html).toContain('type="module"');
       expect(html).toContain('rel="stylesheet"');
@@ -68,6 +70,8 @@ describe('vitedPlugin()', () => {
         const { statusCode, html } = await getHtml(`http://127.0.0.1:${address.port}/`);
         expect(statusCode).toBe(200);
         expect(html).toContain('<title>vited-test-site</title>');
+        expect(html).toContain('rel="icon" type="image/svg+xml"');
+        expect(html).toContain('data:image/svg+xml,');
         expect(html).toContain('id="root"');
         expect(html).toContain('/@vite/client');
         await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({

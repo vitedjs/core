@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -23,11 +23,15 @@ const resolvedSearchModuleId = `\0${searchModuleId}`;
 const builtClientEntry = fileURLToPath(new URL('client-entry.mjs', import.meta.url));
 const sourceClientEntry = fileURLToPath(new URL('client-entry.ts', import.meta.url));
 const clientEntry = existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry;
+const faviconDataURL = `data:image/svg+xml,${encodeURIComponent(
+  readFileSync(new URL('../favicon.svg', import.meta.url), 'utf8'),
+)}`;
 const defaultHtml = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="${faviconDataURL}" />
     <title>Vited</title>
   </head>
   <body>
