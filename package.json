@@ -84,10 +84,6 @@
     "*.css": "oxfmt --write",
     "*.{json,jsonc,scss,less,htm,html,md,mdx,yaml,yml}": "oxfmt --write"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true
-  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
