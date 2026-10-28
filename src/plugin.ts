@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import process from 'node:process';
+import { URL, fileURLToPath } from 'node:url';
 
 import { compile } from '@mdx-js/mdx';
 import matter from 'gray-matter';
@@ -9,7 +10,7 @@ import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import type { Plugin } from 'vite';
 
-import type { DocsConfig, DocumentPage } from './defineConfig';
+import type { DocsConfig, DocumentPage } from './define-config';
 import { scanDocs } from './documents';
 import { createSearchIndex } from './search-index';
 
@@ -19,21 +20,54 @@ const searchModuleId = 'virtual:vited/search-index';
 const resolvedPagesModuleId = `\0${pagesModuleId}`;
 const resolvedClientModuleId = `\0${clientModuleId}`;
 const resolvedSearchModuleId = `\0${searchModuleId}`;
-const builtClientEntry = fileURLToPath(new URL('./clientEntry.mjs', import.meta.url));
-const sourceClientEntry = fileURLToPath(new URL('./clientEntry.ts', import.meta.url));
+const builtClientEntry = fileURLToPath(new URL('client-entry.mjs', import.meta.url));
+const sourceClientEntry = fileURLToPath(new URL('client-entry.ts', import.meta.url));
+const clientEntry = existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry;
+const defaultHtml = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vited</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+`;
 
 export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let docsRoot: string;
   let packageJsonPath: string;
+  let baseURL = '/';
+  let useDefaultHtml = false;
   let packageJSON: Record<string, unknown> = {};
   let pages: DocumentPage[] = [];
 
   return {
     name: 'vited',
     enforce: 'pre',
+    config(config, environment) {
+      if (environment.command !== 'build' || config.build?.rollupOptions?.input !== undefined) {
+        return;
+      }
+
+      const root = path.resolve(config.root ?? process.cwd());
+      if (!existsSync(path.join(root, 'index.html'))) {
+        useDefaultHtml = true;
+        return {
+          build: {
+            rollupOptions: {
+              input: clientEntry,
+            },
+          },
+        };
+      }
+    },
     async configResolved(resolvedConfig) {
       docsRoot = path.resolve(resolvedConfig.root, 'docs');
       packageJsonPath = path.join(resolvedConfig.root, 'package.json');
+      baseURL = resolvedConfig.base;
       packageJSON = await readPackageJson(packageJsonPath);
     },
     async buildStart() {
@@ -46,7 +80,6 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       if (id === pagesModuleId) return resolvedPagesModuleId;
       if (id === clientModuleId) return resolvedClientModuleId;
       if (id === searchModuleId) return resolvedSearchModuleId;
-      return null;
     },
     async load(id) {
       if (id === resolvedPagesModuleId) {
@@ -61,40 +94,36 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       if (id === resolvedClientModuleId) {
         return createClientModule(docs, packageJSON);
       }
-      return null;
     },
     async transform(source, id) {
       const extension = path.extname(id).toLowerCase();
       const relativePath = path.relative(docsRoot, id);
       if (
-        !['.md', '.mdx'].includes(extension) ||
-        relativePath.startsWith('..') ||
-        path.isAbsolute(relativePath)
+        ['.md', '.mdx'].includes(extension) &&
+        !relativePath.startsWith('..') &&
+        !path.isAbsolute(relativePath)
       ) {
-        return null;
-      }
+        const parsed = matter(source);
+        const frontmatter = JSON.stringify(parsed.data);
+        if (extension === '.mdx') {
+          const compiled = await compile(parsed.content);
+          return `${String(compiled)}\nexport const frontmatter = ${frontmatter};`;
+        }
 
-      const parsed = matter(source);
-      const frontmatter = JSON.stringify(parsed.data);
-      if (extension === '.mdx') {
-        const compiled = await compile(parsed.content);
-        return `${String(compiled)}\nexport const frontmatter = ${frontmatter};`;
-      }
-
-      const html = marked.parse(parsed.content, { async: false });
-      if (typeof html !== 'string') {
-        throw new Error(`Failed to render Markdown document: ${id}`);
-      }
-      const safeHtml = sanitizeHtml(html, {
-        allowedAttributes: {
-          ...sanitizeHtml.defaults.allowedAttributes,
-          code: ['class'],
-        },
-        allowedClasses: {
-          code: [/^language-[\w+#.-]+$/],
-        },
-      });
-      return `
+        const html = marked.parse(parsed.content, { async: false });
+        if (typeof html !== 'string') {
+          throw new TypeError(`Failed to render Markdown document: ${id}`);
+        }
+        const safeHtml = sanitizeHtml(html, {
+          allowedAttributes: {
+            ...sanitizeHtml.defaults.allowedAttributes,
+            code: ['class'],
+          },
+          allowedClasses: {
+            code: [/^language-[\w+#.-]+$/],
+          },
+        });
+        return `
         import React from 'react';
         export const frontmatter = ${frontmatter};
         export default function MarkdownDocument({ components = {} }) {
@@ -109,6 +138,40 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           });
         }
       `;
+      }
+    },
+    async generateBundle(_outputOptions, bundle) {
+      if (!useDefaultHtml) return;
+
+      const clientChunk = Object.values(bundle).find(
+        (output) =>
+          output.type === 'chunk' && output.isEntry && output.facadeModuleId === clientEntry,
+      );
+      if (!clientChunk || clientChunk.type !== 'chunk') {
+        throw new Error('Vited could not find the built client entry for its HTML shell.');
+      }
+
+      const html = applyDefaultTitle(defaultHtml, docs, packageJSON);
+      const scriptSrc = escapeHtmlAttribute(`${baseURL}${clientChunk.fileName}`);
+      const stylesheetLinks = Object.values(bundle)
+        .filter((output) => output.type === 'asset' && output.fileName.endsWith('.css'))
+        .map(
+          (output) =>
+            `    <link rel="stylesheet" href="${escapeHtmlAttribute(`${baseURL}${output.fileName}`)}" />`,
+        )
+        .join('\n');
+      const htmlWithStyles = stylesheetLinks
+        ? html.replace('</head>', `${stylesheetLinks}\n  </head>`)
+        : html;
+      const htmlWithClient = htmlWithStyles.replace(
+        '</body>',
+        `    <script type="module" src="${scriptSrc}"></script>\n  </body>`,
+      );
+      this.emitFile({
+        type: 'asset',
+        fileName: 'index.html',
+        source: htmlWithClient,
+      });
     },
     transformIndexHtml: {
       order: 'pre',
@@ -123,7 +186,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
               tag: 'script',
               attrs: {
                 type: 'module',
-                src: toFileUrl(existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry),
+                src: toFileUrl(clientEntry),
               },
               injectTo: 'body',
             },
@@ -134,6 +197,27 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     configureServer(server) {
       server.watcher.add(docsRoot);
       server.watcher.add(packageJsonPath);
+
+      if (!existsSync(path.join(server.config.root, 'index.html'))) {
+        server.middlewares.use((request, response, next) => {
+          if (request.method !== 'GET' || !request.headers.accept?.includes('text/html')) {
+            next();
+            return;
+          }
+
+          void server
+            .transformIndexHtml(
+              request.url ?? '/',
+              applyDefaultTitle(defaultHtml, docs, packageJSON),
+            )
+            .then((html) => {
+              response.statusCode = 200;
+              response.setHeader('Content-Type', 'text/html');
+              response.end(html);
+            })
+            .catch(next);
+        });
+      }
     },
     async handleHotUpdate(context) {
       if (context.file === packageJsonPath) {
@@ -196,7 +280,7 @@ function createClientModule(docs: DocsConfig, packageJSON: Record<string, unknow
       title: ${JSON.stringify(docs.title ?? '')},
       description: ${JSON.stringify(docs.description ?? '')},
       supportedLocales: ${JSON.stringify(docs.supportedLocales ?? [])},
-      menu: ${JSON.stringify(docs.menu ?? null)},
+      menu: ${JSON.stringify(docs.menu)},
       packageJSON: ${JSON.stringify(packageJSON)},
       pages,
       searchIndex,
@@ -235,5 +319,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function toFileUrl(file: string): string {
-  return `/@fs/${file.replace(/\\/g, '/').replace(/^\/+/, '')}`;
+  return `/@fs/${file.replaceAll('\\', '/').replace(/^\/+/, '')}`;
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function applyDefaultTitle(
+  html: string,
+  docs: DocsConfig,
+  packageJSON: Record<string, unknown>,
+): string {
+  const title =
+    docs.title ??
+    (typeof packageJSON['name'] === 'string' ? packageJSON['name'] : 'Vited documentation');
+  return html.replace(
+    /<title\b[^>]*>[\s\S]*?<\/title>/i,
+    `<title>${escapeHtmlAttribute(title)}</title>`,
+  );
 }

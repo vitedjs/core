@@ -5,7 +5,7 @@ import matter from 'gray-matter';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
-import type { DocumentPage } from './defineConfig';
+import type { DocumentPage } from './define-config';
 
 export interface SearchDocument {
   path: string;
@@ -26,17 +26,17 @@ export async function createSearchIndex(pages: DocumentPage[]): Promise<SearchDo
       if (extension === '.md' || extension === '.mdx') {
         const html = marked.parse(parsed.content, { async: false });
         if (typeof html !== 'string') {
-          throw new Error(`Failed to generate search content for document: ${page.file}`);
+          throw new TypeError(`Failed to generate search content for document: ${page.file}`);
         }
 
         content = sanitizeHtml(
           html
-            .replace(/<\/(?:p|h[1-6]|li|pre|blockquote|div)>/gi, ' ')
-            .replace(/<br\s*\/?>/gi, ' '),
+            .replaceAll(/<\/(?:p|h[1-6]|li|pre|blockquote|div)>/gi, ' ')
+            .replaceAll(/<br\s*\/?>/gi, ' '),
           { allowedTags: [], allowedAttributes: {} },
         )
-          .replace(/\{[^{}]*\}/g, ' ')
-          .replace(/\s+/g, ' ')
+          .replaceAll(/\{[^{}]*\}/g, ' ')
+          .replaceAll(/\s+/g, ' ')
           .trim();
       }
 

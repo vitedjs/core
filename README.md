@@ -42,9 +42,9 @@ selected locale. Open search with the Search button or `Ctrl+K` / `⌘K`.
 The [development guide](./docs/guide/README.md) demonstrates nested pages and
 English/Chinese documentation.
 
-The application needs an `index.html` with a `<body>` element. Vited inserts a
-`#root` mount element when one is not present and loads the selected React theme
-automatically.
+Vited uses its built-in HTML shell when the project does not include an
+`index.html`; if one exists, Vited uses that file. The built-in shell provides a
+`<body>` element and a `#root` mount point for the selected React theme.
 
 ## Development
 

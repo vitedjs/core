@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { DocumentPage } from './defineConfig';
+import type { DocumentPage } from './define-config';
 
 const documentExtensions = new Set(['.md', '.mdx', '.jsx', '.tsx']);
 
@@ -22,7 +22,7 @@ export async function scanDocs(
     };
   });
 
-  return pages.sort(
+  return pages.toSorted(
     (left, right) => left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale),
   );
 }
@@ -31,7 +31,7 @@ export function getPageRoute(
   file: string,
   supportedLocales: string[] = [],
 ): { route: string; locale: string } {
-  const normalizedPath = file.replace(/\\/g, '/').replaceAll(path.sep, '/');
+  const normalizedPath = file.replaceAll('\\', '/');
   const extension = path.extname(normalizedPath).toLowerCase();
   if (!documentExtensions.has(extension)) {
     throw new Error(`Unsupported documentation file extension: ${file}`);
@@ -81,10 +81,10 @@ async function findDocuments(directory: string): Promise<string[]> {
       return [];
     }),
   );
-  return nested.flat().sort((left, right) => left.localeCompare(right));
+  return nested.flat().toSorted((left, right) => left.localeCompare(right));
 }
 
 function titleFromRoute(route: string): string {
-  const segment = route.split('/').filter(Boolean).at(-1);
-  return segment ? decodeURIComponent(segment).replace(/[-_]/g, ' ') : 'Home';
+  const segment = route.split('/').findLast(Boolean);
+  return segment ? decodeURIComponent(segment).replaceAll(/[-_]/g, ' ') : 'Home';
 }

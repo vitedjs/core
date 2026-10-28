@@ -1,13 +1,86 @@
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { get } from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 
-import { build } from 'vite';
+import { build, createServer } from 'vite';
 import { describe, expect, it } from 'vitest';
 
 import { vitedPlugin } from './plugin';
 
 describe('vitedPlugin()', () => {
+  it('uses the core HTML shell when the project has no index.html', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-default-html-'));
+    const output = path.join(root, 'output');
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'theme.mjs'),
+        "import './theme.css'; export default function Theme() { return null; }",
+      );
+      await writeFile(path.join(root, 'theme.css'), 'body { color: red; }');
+
+      await build({
+        configFile: false,
+        root,
+        plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
+        build: {
+          outDir: output,
+          rollupOptions: {
+            external: ['react', 'react-dom/client', 'react/jsx-runtime'],
+          },
+        },
+      });
+
+      const html = await readFile(path.join(output, 'index.html'), 'utf8');
+      expect(html).toContain('<title>vited-test-site</title>');
+      expect(html).toContain('id="root"');
+      expect(html).toContain('type="module"');
+      expect(html).toContain('rel="stylesheet"');
+      await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('serves the core HTML shell in development when the project has no index.html', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-dev-default-html-'));
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      const server = await createServer({
+        configFile: false,
+        root,
+        plugins: [vitedPlugin()],
+        server: { host: '127.0.0.1', port: 0 },
+      });
+
+      try {
+        await server.listen();
+        const address = server.httpServer?.address();
+        if (!address || typeof address === 'string') {
+          throw new Error('Vite dev server did not expose a TCP address');
+        }
+
+        const { statusCode, html } = await getHtml(`http://127.0.0.1:${address.port}/`);
+        expect(statusCode).toBe(200);
+        expect(html).toContain('<title>vited-test-site</title>');
+        expect(html).toContain('id="root"');
+        expect(html).toContain('/@vite/client');
+        await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
+          code: 'ENOENT',
+        });
+      } finally {
+        await server.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('builds a site with recursively discovered Markdown and MDX pages', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-'));
     const docsRoot = path.join(root, 'docs');
@@ -87,4 +160,18 @@ async function collectJavaScript(directory: string): Promise<string[]> {
     }),
   );
   return contents.flat();
+}
+
+function getHtml(url: string): Promise<{ statusCode: number | undefined; html: string }> {
+  return new Promise((resolve, reject) => {
+    const request = get(url, { headers: { accept: 'text/html' } }, (response) => {
+      let html = '';
+      response.setEncoding('utf8');
+      response.on('data', (chunk: string) => {
+        html += chunk;
+      });
+      response.on('end', () => resolve({ statusCode: response.statusCode, html }));
+    });
+    request.on('error', reject);
+  });
 }
