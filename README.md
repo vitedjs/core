@@ -27,7 +27,8 @@ locale uses the unprefixed route; other locales use a `/<locale>/` prefix. For e
 each page's `frontmatter`; its `title` becomes the page title.
 
 Place `favicon.svg` or `favicon.png` in `docs` to use a project favicon. SVG is
-preferred when both files exist; otherwise Vited uses its built-in favicon.
+preferred when both files exist. If neither file exists, Vited does not add a
+favicon; any favicon already declared in the project's `index.html` is preserved.
 
 Fenced code blocks in Markdown and MDX are syntax-highlighted by the selected
 theme when a language is specified on the fence (for example, TypeScript or

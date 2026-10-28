@@ -24,7 +24,6 @@
   "funding": "https://ko-fi.com/guoyunhe",
   "files": [
     "dist",
-    "favicon.svg",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"

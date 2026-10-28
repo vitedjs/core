@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -23,26 +23,22 @@ const resolvedSearchModuleId = `\0${searchModuleId}`;
 const builtClientEntry = fileURLToPath(new URL('client-entry.mjs', import.meta.url));
 const sourceClientEntry = fileURLToPath(new URL('client-entry.ts', import.meta.url));
 const clientEntry = existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry;
-const fallbackFavicon: Favicon = {
-  type: 'image/svg+xml',
-  href: `data:image/svg+xml,${encodeURIComponent(
-    readFileSync(new URL('../favicon.svg', import.meta.url), 'utf8'),
-  )}`,
-};
 
 interface Favicon {
   type: 'image/svg+xml' | 'image/png';
   href: string;
 }
 
-function createDefaultHtml(favicon: Favicon): string {
+function createDefaultHtml(favicon?: Favicon): string {
+  const faviconLink = favicon
+    ? `    <link rel="icon" type="${favicon.type}" href="${favicon.href}" />\n`
+    : '';
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="${favicon.type}" href="${favicon.href}" />
-    <title>Vited</title>
+${faviconLink}    <title>Vited</title>
   </head>
   <body>
     <div id="root"></div>
@@ -51,7 +47,7 @@ function createDefaultHtml(favicon: Favicon): string {
 `;
 }
 
-async function readProjectFavicon(docsRoot: string): Promise<Favicon> {
+async function readProjectFavicon(docsRoot: string): Promise<Favicon | undefined> {
   for (const [fileName, type] of [
     ['favicon.svg', 'image/svg+xml'],
     ['favicon.png', 'image/png'],
@@ -71,13 +67,13 @@ async function readProjectFavicon(docsRoot: string): Promise<Favicon> {
       throw new Error(`Failed to read documentation favicon at ${file}`, { cause: error });
     }
   }
-  return fallbackFavicon;
+  return;
 }
 
 export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let docsRoot: string;
   let packageJsonPath: string;
-  let favicon = fallbackFavicon;
+  let favicon: Favicon | undefined;
   let baseURL = '/';
   let useDefaultHtml = false;
   let packageJSON: Record<string, unknown> = {};
@@ -223,7 +219,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         return {
           html: faviconResult.html,
           tags: [
-            ...(faviconResult.injectFavicon
+            ...(favicon && faviconResult.injectFavicon
               ? [
                   {
                     tag: 'link' as const,
@@ -382,8 +378,9 @@ function toFileUrl(file: string): string {
 
 function replaceFaviconLink(
   html: string,
-  favicon: Favicon,
+  favicon: Favicon | undefined,
 ): { html: string; injectFavicon: boolean } {
+  if (!favicon) return { html, injectFavicon: false };
   let hasFavicon = false;
   const updatedHtml = html.replaceAll(/<link\b[^>]*>/gi, (linkTag) => {
     if (!isFaviconLink(linkTag)) return linkTag;

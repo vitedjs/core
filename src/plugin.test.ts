@@ -52,6 +52,37 @@ describe('vitedPlugin()', () => {
     }
   });
 
+  it('builds the core HTML shell without adding a favicon when none is configured', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-no-favicon-'));
+    const output = path.join(root, 'output');
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'theme.mjs'),
+        'export default function Theme() { return null; }',
+      );
+
+      await build({
+        configFile: false,
+        root,
+        plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
+        build: {
+          outDir: output,
+          rollupOptions: {
+            external: ['react', 'react-dom/client', 'react/jsx-runtime'],
+          },
+        },
+      });
+
+      const html = await readFile(path.join(output, 'index.html'), 'utf8');
+      expect(html).not.toContain('rel="icon"');
+      expect(html).not.toContain('data:image/svg+xml,');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('serves the core HTML shell in development when the project has no index.html', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'vited-dev-default-html-'));
     try {
@@ -74,8 +105,8 @@ describe('vitedPlugin()', () => {
         const { statusCode, html } = await getHtml(`http://127.0.0.1:${address.port}/`);
         expect(statusCode).toBe(200);
         expect(html).toContain('<title>vited-test-site</title>');
-        expect(html).toContain('rel="icon" type="image/svg+xml"');
-        expect(html).toContain('data:image/svg+xml,');
+        expect(html).not.toContain('rel="icon"');
+        expect(html).not.toContain('data:image/svg+xml,');
         expect(html).toContain('id="root"');
         expect(html).toContain('/@vite/client');
         await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
@@ -84,6 +115,41 @@ describe('vitedPlugin()', () => {
       } finally {
         await server.close();
       }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('preserves a custom index favicon when the docs directory has none', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-custom-favicon-'));
+    const output = path.join(root, 'output');
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'index.html'),
+        '<html><head><link rel="icon" href="/custom.ico"></head><body></body></html>',
+      );
+      await writeFile(
+        path.join(root, 'theme.mjs'),
+        'export default function Theme() { return null; }',
+      );
+
+      await build({
+        configFile: false,
+        root,
+        plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
+        build: {
+          outDir: output,
+          rollupOptions: {
+            external: ['react', 'react-dom/client', 'react/jsx-runtime'],
+          },
+        },
+      });
+
+      const html = await readFile(path.join(output, 'index.html'), 'utf8');
+      expect(html).toContain('<link rel="icon" href="/custom.ico">');
+      expect(html).not.toContain('data:image/svg+xml,');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

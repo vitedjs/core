@@ -4,7 +4,11 @@
 
 ### Added
 
-- Use `docs/favicon.svg` or `docs/favicon.png` as the documentation favicon, with the built-in SVG as a fallback.
+- Use `docs/favicon.svg` or `docs/favicon.png` as the documentation favicon, preferring SVG.
+
+### Changed
+
+- Do not add a favicon when the project does not provide one.
 
 ## 0.1.1 - 2026-10-28
 
