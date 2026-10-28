@@ -23,15 +23,25 @@ const resolvedSearchModuleId = `\0${searchModuleId}`;
 const builtClientEntry = fileURLToPath(new URL('client-entry.mjs', import.meta.url));
 const sourceClientEntry = fileURLToPath(new URL('client-entry.ts', import.meta.url));
 const clientEntry = existsSync(builtClientEntry) ? builtClientEntry : sourceClientEntry;
-const faviconDataURL = `data:image/svg+xml,${encodeURIComponent(
-  readFileSync(new URL('../favicon.svg', import.meta.url), 'utf8'),
-)}`;
-const defaultHtml = `<!doctype html>
+const fallbackFavicon: Favicon = {
+  type: 'image/svg+xml',
+  href: `data:image/svg+xml,${encodeURIComponent(
+    readFileSync(new URL('../favicon.svg', import.meta.url), 'utf8'),
+  )}`,
+};
+
+interface Favicon {
+  type: 'image/svg+xml' | 'image/png';
+  href: string;
+}
+
+function createDefaultHtml(favicon: Favicon): string {
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="${faviconDataURL}" />
+    <link rel="icon" type="${favicon.type}" href="${favicon.href}" />
     <title>Vited</title>
   </head>
   <body>
@@ -39,10 +49,35 @@ const defaultHtml = `<!doctype html>
   </body>
 </html>
 `;
+}
+
+async function readProjectFavicon(docsRoot: string): Promise<Favicon> {
+  for (const [fileName, type] of [
+    ['favicon.svg', 'image/svg+xml'],
+    ['favicon.png', 'image/png'],
+  ] as const) {
+    const file = path.join(docsRoot, fileName);
+    try {
+      const contents = await readFile(file);
+      return {
+        type,
+        href:
+          type === 'image/svg+xml'
+            ? `data:${type},${encodeURIComponent(contents.toString('utf8'))}`
+            : `data:${type};base64,${contents.toString('base64')}`,
+      };
+    } catch (error) {
+      if (isMissingFileError(error)) continue;
+      throw new Error(`Failed to read documentation favicon at ${file}`, { cause: error });
+    }
+  }
+  return fallbackFavicon;
+}
 
 export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let docsRoot: string;
   let packageJsonPath: string;
+  let favicon = fallbackFavicon;
   let baseURL = '/';
   let useDefaultHtml = false;
   let packageJSON: Record<string, unknown> = {};
@@ -72,6 +107,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       docsRoot = path.resolve(resolvedConfig.root, 'docs');
       packageJsonPath = path.join(resolvedConfig.root, 'package.json');
       baseURL = resolvedConfig.base;
+      favicon = await readProjectFavicon(docsRoot);
       packageJSON = await readPackageJson(packageJsonPath);
     },
     async buildStart() {
@@ -155,7 +191,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         throw new Error('Vited could not find the built client entry for its HTML shell.');
       }
 
-      const html = applyDefaultTitle(defaultHtml, docs, packageJSON);
+      const html = applyDefaultTitle(createDefaultHtml(favicon), docs, packageJSON);
       const scriptSrc = escapeHtmlAttribute(`${baseURL}${clientChunk.fileName}`);
       const stylesheetLinks = Object.values(bundle)
         .filter((output) => output.type === 'asset' && output.fileName.endsWith('.css'))
@@ -183,9 +219,23 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         const withRoot = /id=["']root["']/.test(html)
           ? html
           : html.replace(/<body([^>]*)>/i, '<body$1><div id="root"></div>');
+        const faviconResult = replaceFaviconLink(withRoot, favicon);
         return {
-          html: withRoot,
+          html: faviconResult.html,
           tags: [
+            ...(faviconResult.injectFavicon
+              ? [
+                  {
+                    tag: 'link' as const,
+                    attrs: {
+                      rel: 'icon',
+                      type: favicon.type,
+                      href: favicon.href,
+                    },
+                    injectTo: 'head-prepend' as const,
+                  },
+                ]
+              : []),
             {
               tag: 'script',
               attrs: {
@@ -212,7 +262,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           void server
             .transformIndexHtml(
               request.url ?? '/',
-              applyDefaultTitle(defaultHtml, docs, packageJSON),
+              applyDefaultTitle(createDefaultHtml(favicon), docs, packageJSON),
             )
             .then((html) => {
               response.statusCode = 200;
@@ -328,6 +378,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function toFileUrl(file: string): string {
   return `/@fs/${file.replaceAll('\\', '/').replace(/^\/+/, '')}`;
+}
+
+function replaceFaviconLink(
+  html: string,
+  favicon: Favicon,
+): { html: string; injectFavicon: boolean } {
+  let hasFavicon = false;
+  const updatedHtml = html.replaceAll(/<link\b[^>]*>/gi, (linkTag) => {
+    if (!isFaviconLink(linkTag)) return linkTag;
+    if (hasFavicon) return '';
+    hasFavicon = true;
+    return `<link rel="icon" type="${favicon.type}" href="${escapeHtmlAttribute(favicon.href)}" />`;
+  });
+  return { html: updatedHtml, injectFavicon: !hasFavicon };
+}
+
+function isFaviconLink(linkTag: string): boolean {
+  const relMatch = /\brel\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(linkTag);
+  const rel = relMatch?.[1] ?? relMatch?.[2] ?? relMatch?.[3];
+  return rel?.toLowerCase().split(/\s+/).includes('icon') ?? false;
 }
 
 function escapeHtmlAttribute(value: string): string {

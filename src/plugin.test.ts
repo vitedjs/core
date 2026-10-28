@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { get } from 'node:http';
 import os from 'node:os';
@@ -12,9 +13,12 @@ describe('vitedPlugin()', () => {
   it('uses the core HTML shell when the project has no index.html', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-default-html-'));
     const output = path.join(root, 'output');
+    const projectFavicon =
+      '<svg xmlns="http://www.w3.org/2000/svg"><title>project icon</title></svg>';
     try {
       await mkdir(path.join(root, 'docs'), { recursive: true });
       await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(path.join(root, 'docs', 'favicon.svg'), projectFavicon);
       await writeFile(
         path.join(root, 'theme.mjs'),
         "import './theme.css'; export default function Theme() { return null; }",
@@ -36,7 +40,7 @@ describe('vitedPlugin()', () => {
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
       expect(html).toContain('<title>vited-test-site</title>');
       expect(html).toContain('rel="icon" type="image/svg+xml"');
-      expect(html).toContain('data:image/svg+xml,');
+      expect(html).toContain(`href="data:image/svg+xml,${encodeURIComponent(projectFavicon)}"`);
       expect(html).toContain('id="root"');
       expect(html).toContain('type="module"');
       expect(html).toContain('rel="stylesheet"');
@@ -108,6 +112,8 @@ describe('vitedPlugin()', () => {
         path.join(docsRoot, 'README.md'),
         '---\ntitle: Welcome\n---\n# Documentation home\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
+      const projectFavicon = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+      await writeFile(path.join(docsRoot, 'favicon.png'), projectFavicon);
       await writeFile(
         path.join(docsRoot, 'guide', 'start.zh.mdx'),
         '---\ntitle: 开始\n---\n# Getting started\n\nUnique searchable phrase.\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
@@ -135,6 +141,7 @@ describe('vitedPlugin()', () => {
       const scripts = await collectJavaScript(output);
       const bundle = scripts.join('\n');
 
+      expect(html).toContain(`href="data:image/png;base64,${projectFavicon.toString('base64')}"`);
       expect(html).toContain('id="root"');
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');

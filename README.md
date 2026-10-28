@@ -26,6 +26,9 @@ locale uses the unprefixed route; other locales use a `/<locale>/` prefix. For e
 `README.zh.md` is available at `/zh/`. Markdown frontmatter is available as
 each page's `frontmatter`; its `title` becomes the page title.
 
+Place `favicon.svg` or `favicon.png` in `docs` to use a project favicon. SVG is
+preferred when both files exist; otherwise Vited uses its built-in favicon.
+
 Fenced code blocks in Markdown and MDX are syntax-highlighted by the selected
 theme when a language is specified on the fence (for example, TypeScript or
 JavaScript). The default Mantine theme uses Shiki with `@mantine/code-highlight`

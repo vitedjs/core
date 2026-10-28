@@ -4,7 +4,7 @@
 
 ### Added
 
-- Add an original Vited SVG favicon to the default documentation HTML shell.
+- Use `docs/favicon.svg` or `docs/favicon.png` as the documentation favicon, with the built-in SVG as a fallback.
 
 ## 0.1.1 - 2026-10-28
 
