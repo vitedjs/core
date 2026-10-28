@@ -5,6 +5,8 @@
 ### Added
 
 - Use `docs/favicon.svg` or `docs/favicon.png` as the documentation favicon, preferring SVG.
+- Set HTML description and keywords from `docs` configuration or `package.json`.
+- Generate an HTML shell for every documentation page, with frontmatter overrides for title, description, and keywords.
 
 ### Changed
 

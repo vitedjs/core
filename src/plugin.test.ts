@@ -17,7 +17,14 @@ describe('vitedPlugin()', () => {
       '<svg xmlns="http://www.w3.org/2000/svg"><title>project icon</title></svg>';
     try {
       await mkdir(path.join(root, 'docs'), { recursive: true });
-      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'package.json'),
+        JSON.stringify({
+          name: 'vited-test-site',
+          description: 'Package description',
+          keywords: ['package', 'metadata'],
+        }),
+      );
       await writeFile(path.join(root, 'docs', 'favicon.svg'), projectFavicon);
       await writeFile(
         path.join(root, 'theme.mjs'),
@@ -28,7 +35,13 @@ describe('vitedPlugin()', () => {
       await build({
         configFile: false,
         root,
-        plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
+        plugins: [
+          vitedPlugin({
+            theme: path.join(root, 'theme.mjs'),
+            description: 'Configured & custom',
+            keywords: ['configured', 'custom'],
+          }),
+        ],
         build: {
           outDir: output,
           rollupOptions: {
@@ -39,6 +52,9 @@ describe('vitedPlugin()', () => {
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
       expect(html).toContain('<title>vited-test-site</title>');
+      expect(html).toContain('<meta name="description" content="Configured &amp; custom" />');
+      expect(html).toContain('<meta name="keywords" content="configured, custom" />');
+      expect(html).not.toContain('Package description');
       expect(html).toContain('rel="icon" type="image/svg+xml"');
       expect(html).toContain(`href="data:image/svg+xml,${encodeURIComponent(projectFavicon)}"`);
       expect(html).toContain('id="root"');
@@ -57,10 +73,21 @@ describe('vitedPlugin()', () => {
     const output = path.join(root, 'output');
     try {
       await mkdir(path.join(root, 'docs'), { recursive: true });
-      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'package.json'),
+        JSON.stringify({
+          name: 'vited-test-site',
+          description: 'Package description',
+          keywords: ['package', 'metadata'],
+        }),
+      );
       await writeFile(
         path.join(root, 'theme.mjs'),
         'export default function Theme() { return null; }',
+      );
+      await writeFile(
+        path.join(root, 'docs', 'README.md'),
+        '---\ntitle: Static page title\ndescription: Static page description\nkeywords: [static, page]\n---\n# Body is client-rendered',
       );
 
       await build({
@@ -76,6 +103,10 @@ describe('vitedPlugin()', () => {
       });
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
+      expect(html).toContain('<title>Static page title</title>');
+      expect(html).toContain('<meta name="description" content="Static page description" />');
+      expect(html).toContain('<meta name="keywords" content="static, page" />');
+      expect(html).not.toContain('<h1>Body is client-rendered</h1>');
       expect(html).not.toContain('rel="icon"');
       expect(html).not.toContain('data:image/svg+xml,');
     } finally {
@@ -125,7 +156,14 @@ describe('vitedPlugin()', () => {
     const output = path.join(root, 'output');
     try {
       await mkdir(path.join(root, 'docs'), { recursive: true });
-      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(
+        path.join(root, 'package.json'),
+        JSON.stringify({
+          name: 'vited-test-site',
+          description: 'Package description',
+          keywords: ['package', 'metadata'],
+        }),
+      );
       await writeFile(
         path.join(root, 'index.html'),
         '<html><head><link rel="icon" href="/custom.ico"></head><body></body></html>',
@@ -149,6 +187,8 @@ describe('vitedPlugin()', () => {
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
       expect(html).toContain('<link rel="icon" href="/custom.ico">');
+      expect(html).toContain('<meta name="description" content="Package description" />');
+      expect(html).toContain('<meta name="keywords" content="package, metadata" />');
       expect(html).not.toContain('data:image/svg+xml,');
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -161,11 +201,14 @@ describe('vitedPlugin()', () => {
     const output = path.join(root, 'output');
     try {
       await mkdir(path.join(docsRoot, 'guide'), { recursive: true });
+      await mkdir(path.join(docsRoot, 'api'), { recursive: true });
       await writeFile(path.join(root, 'index.html'), '<html><body></body></html>');
       await writeFile(
         path.join(root, 'package.json'),
         JSON.stringify({
           name: 'vited-test-site',
+          description: 'Global site description',
+          keywords: ['global', 'site'],
           repository: 'https://github.com/vitedjs/vited-test-site.git',
           funding: { type: 'github', url: 'https://github.com/sponsors/vitedjs' },
         }),
@@ -176,13 +219,17 @@ describe('vitedPlugin()', () => {
       );
       await writeFile(
         path.join(docsRoot, 'README.md'),
-        '---\ntitle: Welcome\n---\n# Documentation home\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
+        '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
       const projectFavicon = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
       await writeFile(path.join(docsRoot, 'favicon.png'), projectFavicon);
       await writeFile(
         path.join(docsRoot, 'guide', 'start.zh.mdx'),
-        '---\ntitle: 开始\n---\n# Getting started\n\nUnique searchable phrase.\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
+        '---\ntitle: 开始\ndescription: Guide page description\nkeywords: [guide, start]\n---\n# Getting started\n\nUnique searchable phrase.\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
+      );
+      await writeFile(
+        path.join(docsRoot, 'api', 'client.tsx'),
+        'export default function ClientPage() { return null; }',
       );
 
       await build({
@@ -204,11 +251,33 @@ describe('vitedPlugin()', () => {
       });
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
+      const localizedPageHtml = await readFile(
+        path.join(output, 'zh', 'guide', 'start', 'index.html'),
+        'utf8',
+      );
+      const componentPageHtml = await readFile(
+        path.join(output, 'api', 'client', 'index.html'),
+        'utf8',
+      );
       const scripts = await collectJavaScript(output);
       const bundle = scripts.join('\n');
 
       expect(html).toContain(`href="data:image/png;base64,${projectFavicon.toString('base64')}"`);
+      expect(html).toContain('<title>Home page SEO</title>');
+      expect(html).toContain('<meta name="description" content="Home page description" />');
+      expect(html).toContain('<meta name="keywords" content="home, docs" />');
       expect(html).toContain('id="root"');
+      expect(localizedPageHtml).toContain('<title>开始</title>');
+      expect(localizedPageHtml).toContain(
+        '<meta name="description" content="Guide page description" />',
+      );
+      expect(localizedPageHtml).toContain('<meta name="keywords" content="guide, start" />');
+      expect(localizedPageHtml).not.toContain('<h1');
+      expect(localizedPageHtml).not.toContain('Unique searchable phrase.');
+      expect(componentPageHtml).toContain(
+        '<meta name="description" content="Global site description" />',
+      );
+      expect(componentPageHtml).toContain('<meta name="keywords" content="global, site" />');
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');
       expect(bundle).toContain('Getting started');

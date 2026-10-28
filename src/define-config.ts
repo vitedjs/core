@@ -23,6 +23,8 @@ export interface DocsConfig {
   title?: string;
   /** Site description. If not specified, description from package.json will be used. */
   description?: string;
+  /** HTML keywords. If not specified, keywords from package.json will be used. */
+  keywords?: string[];
   /** Locales recognized in document filenames such as `intro.zh.md`. */
   supportedLocales?: string[];
   /**

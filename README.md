@@ -12,11 +12,22 @@ import { defineConfig } from '@vited/core';
 export default defineConfig({
   docs: {
     title: 'My Cool Library',
+    description: 'A short description of My Cool Library.',
+    keywords: ['library', 'example'],
     supportedLocales: ['en', 'zh'],
     theme: '@vited/theme-mantine',
   },
 });
 ```
+
+The HTML description and keywords use `docs.description` and `docs.keywords`
+when provided, and otherwise use the matching fields from `package.json`.
+
+During a production build, Vited emits an HTML shell for each documentation
+page (`guide/start` becomes `guide/start/index.html`). Page frontmatter
+`title`, `description`, and `keywords` override the corresponding HTML head
+values. The page body remains client-rendered; the generated HTML provides the
+page-specific head for crawlers.
 
 Vited reads documents from the `docs` directory under the Vite project root.
 Vited discovers `.jsx`, `.tsx`, `.md`, and `.mdx` recursively. Directory
