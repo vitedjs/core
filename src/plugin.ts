@@ -2,11 +2,13 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { compile } from '@mdx-js/mdx';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import type { Plugin } from 'vite';
+
 import type { DocsConfig, DocumentPage } from './defineConfig';
 import { scanDocs } from './documents';
 import { createSearchIndex } from './search-index';
@@ -152,20 +154,21 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       for (const module of [pagesModule, searchModule]) {
         if (module) context.server.moduleGraph.invalidateModule(module);
       }
-      return [...new Set([
-        ...context.modules,
-        pagesModule,
-        searchModule,
-      ].filter((module) => module !== undefined))];
+      return [
+        ...new Set(
+          [...context.modules, pagesModule, searchModule].filter((module) => module !== undefined),
+        ),
+      ];
     },
   };
 }
 
 function createPagesModule(pages: DocumentPage[]): string {
-  const imports = pages.map((page, index) =>
-    `import * as doc${index} from ${JSON.stringify(page.file)};`,
+  const imports = pages.map(
+    (page, index) => `import * as doc${index} from ${JSON.stringify(page.file)};`,
   );
-  const entries = pages.map((page, index) => `{
+  const entries = pages.map(
+    (page, index) => `{
     path: ${JSON.stringify(page.path)},
     locale: ${JSON.stringify(page.locale)},
     title: typeof doc${index}.frontmatter?.title === 'string'
@@ -173,15 +176,13 @@ function createPagesModule(pages: DocumentPage[]): string {
       : ${JSON.stringify(page.title)},
     frontmatter: doc${index}.frontmatter ?? {},
     component: doc${index}.default
-  }`);
+  }`,
+  );
 
   return `${imports.join('\n')}\nexport default [${entries.join(',\n')}];`;
 }
 
-function createClientModule(
-  docs: DocsConfig,
-  packageJSON: Record<string, unknown>,
-): string {
+function createClientModule(docs: DocsConfig, packageJSON: Record<string, unknown>): string {
   const theme = docs.theme ?? '@vited/theme-mantine';
   return `
     import React from 'react';

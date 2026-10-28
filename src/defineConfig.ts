@@ -1,4 +1,5 @@
 import type { UserConfig as ViteUserConfig } from 'vite';
+
 import { vitedPlugin } from './plugin';
 
 export function defineConfig(config: UserConfig): UserConfig {
@@ -13,38 +14,30 @@ export function defineConfig(config: UserConfig): UserConfig {
 }
 
 export interface UserConfig extends ViteUserConfig {
-  /**
-   * Configuration of the generated document website.
-   */
+  /** Configuration of the generated document website. */
   docs?: DocsConfig;
 }
 
 export interface DocsConfig {
-  /**
-   * Site title. If not specified, name from package.json will be used.
-   */
+  /** Site title. If not specified, name from package.json will be used. */
   title?: string;
-  /**
-   * Site description. If not specified, description from package.json will be used.
-   */
+  /** Site description. If not specified, description from package.json will be used. */
   description?: string;
-  /**
-   * Locales recognized in document filenames such as `intro.zh.md`.
-   */
+  /** Locales recognized in document filenames such as `intro.zh.md`. */
   supportedLocales?: string[];
   /**
    * Theme package whose default export is a React component.
+   *
    * @default '@vited/theme-mantine'
    */
   theme?: string;
   /**
    * The base URL where the site root is located.
+   *
    * @default '/'
    */
   baseURL?: string;
-  /**
-   * Sidebar menu entries. If not specified, Vited builds the menu from docs.
-   */
+  /** Sidebar menu entries. If not specified, Vited builds the menu from docs. */
   menu?: MenuEntry[];
 }
 
@@ -57,32 +50,18 @@ export interface DocumentPage {
 }
 
 export interface MenuEntry {
-  /**
-   * Render a divider instead of normal menu entry. All other options will be ignored.
-   */
+  /** Render a divider instead of normal menu entry. All other options will be ignored. */
   divider?: boolean;
-  /**
-   * Text content of the menu entry.
-   */
+  /** Text content of the menu entry. */
   text?: string;
-  /**
-   * Route path if it is linked to an internal page.
-   */
+  /** Route path if it is linked to an internal page. */
   path?: string;
-  /**
-   * Document file, *.mdx, *.md, *.jsx, *.tsx
-   */
+  /** Document file, *.mdx, *.md, *.jsx, *.tsx */
   file?: string;
-  /**
-   * External link.
-   */
+  /** External link. */
   link?: string;
-  /**
-   * Mark doc entries that need extra attention
-   */
+  /** Mark doc entries that need extra attention */
   flag?: 'experimental' | 'new' | 'deprecated';
-  /**
-   * Configure nested menu entries.
-   */
+  /** Configure nested menu entries. */
   children?: MenuEntry[];
 }

@@ -1,8 +1,10 @@
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+
 import { build } from 'vite';
 import { describe, expect, it } from 'vitest';
+
 import { vitedPlugin } from './plugin';
 
 describe('vitedPlugin()', () => {
@@ -13,11 +15,14 @@ describe('vitedPlugin()', () => {
     try {
       await mkdir(path.join(docsRoot, 'guide'), { recursive: true });
       await writeFile(path.join(root, 'index.html'), '<html><body></body></html>');
-      await writeFile(path.join(root, 'package.json'), JSON.stringify({
-        name: 'vited-test-site',
-        repository: 'https://github.com/vitedjs/vited-test-site.git',
-        funding: { type: 'github', url: 'https://github.com/sponsors/vitedjs' },
-      }));
+      await writeFile(
+        path.join(root, 'package.json'),
+        JSON.stringify({
+          name: 'vited-test-site',
+          repository: 'https://github.com/vitedjs/vited-test-site.git',
+          funding: { type: 'github', url: 'https://github.com/sponsors/vitedjs' },
+        }),
+      );
       await writeFile(
         path.join(root, 'theme.mjs'),
         'export default function Theme() { return null; }',
@@ -34,10 +39,12 @@ describe('vitedPlugin()', () => {
       await build({
         configFile: false,
         root,
-        plugins: [vitedPlugin({
-          supportedLocales: ['en', 'zh'],
-          theme: path.join(root, 'theme.mjs'),
-        })],
+        plugins: [
+          vitedPlugin({
+            supportedLocales: ['en', 'zh'],
+            theme: path.join(root, 'theme.mjs'),
+          }),
+        ],
         build: {
           outDir: output,
           rollupOptions: {
@@ -71,11 +78,13 @@ describe('vitedPlugin()', () => {
 
 async function collectJavaScript(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
-  const contents = await Promise.all(entries.map(async (entry) => {
-    const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) return collectJavaScript(file);
-    if (entry.isFile() && entry.name.endsWith('.js')) return [await readFile(file, 'utf8')];
-    return [];
-  }));
+  const contents = await Promise.all(
+    entries.map(async (entry) => {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) return collectJavaScript(file);
+      if (entry.isFile() && entry.name.endsWith('.js')) return [await readFile(file, 'utf8')];
+      return [];
+    }),
+  );
   return contents.flat();
 }

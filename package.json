@@ -3,36 +3,32 @@
   "version": "0.1.0",
   "description": "Core Vite integration and documentation pipeline for Vited",
   "keywords": [
-    "vite",
-    "react",
     "documentation",
-    "mdx"
+    "mdx",
+    "react",
+    "vite"
   ],
   "homepage": "https://github.com/vitedjs/core#readme",
   "bugs": {
     "url": "https://github.com/vitedjs/core/issues"
+  },
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Guo Yunhe",
+    "email": "i@guoyunhe.me"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitedjs/core.git"
   },
   "funding": "https://ko-fi.com/guoyunhe",
-  "license": "MPL-2.0",
-  "author": {
-    "name": "Guo Yunhe",
-    "email": "i@guoyunhe.me"
-  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "type": "module",
-  "engines": {
-    "node": "^20.19.0 || >=22.12.0"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": ">=12.14.0",
-      "onFail": "error"
-    }
-  },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
@@ -41,37 +37,22 @@
       "import": "./dist/index.mjs"
     }
   },
-  "files": [
-    "dist",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
-    "predev": "pnpm build && pnpm --dir ../cli build && pnpm --dir ../theme-mantine build",
-    "dev": "vited dev",
     "build": "tsdown",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "dev": "vited dev",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint",
-    "prepare": "husky"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true
+    "predev": "pnpm build && pnpm --dir ../cli build && pnpm --dir ../theme-mantine build",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",
     "gray-matter": "^4.0.3",
     "marked": "^18.1.2",
     "sanitize-html": "^2.17.0"
-  },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18",
-    "vite": "^8.3.5"
   },
   "devDependencies": {
     "@guoyunhe/editorconfig": "^0.3.0",
@@ -90,6 +71,11 @@
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "vite": "^8.3.5"
+  },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,vue}": [
       "oxfmt --write",
@@ -97,5 +83,19 @@
     ],
     "*.css": "oxfmt --write",
     "*.{json,jsonc,scss,less,htm,html,md,mdx,yaml,yml}": "oxfmt --write"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": ">=12.14.0",
+      "onFail": "error"
+    }
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

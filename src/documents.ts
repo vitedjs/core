@@ -1,5 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
+
 import type { DocumentPage } from './defineConfig';
 
 const documentExtensions = new Set(['.md', '.mdx', '.jsx', '.tsx']);
@@ -21,7 +22,9 @@ export async function scanDocs(
     };
   });
 
-  return pages.sort((left, right) => left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale));
+  return pages.sort(
+    (left, right) => left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale),
+  );
 }
 
 export function getPageRoute(
@@ -40,22 +43,26 @@ export function getPageRoute(
   const configuredLocale = requestedLocale
     ? supportedLocales.find((item) => item.toLowerCase() === requestedLocale.toLowerCase())
     : undefined;
-  const hasSupportedLocale = requestedLocale !== undefined &&
+  const hasSupportedLocale =
+    requestedLocale !== undefined &&
     (supportedLocales.length === 0 || configuredLocale !== undefined);
-  const stem = hasSupportedLocale && requestedLocale
-    ? basename.slice(0, -requestedLocale.length - 1)
-    : basename;
+  const stem =
+    hasSupportedLocale && requestedLocale
+      ? basename.slice(0, -requestedLocale.length - 1)
+      : basename;
   const directory = path.posix.dirname(normalizedPath);
   const segments = [...(directory === '.' ? [] : directory.split('/')), stem];
   if (stem.toLowerCase() === 'readme') {
     segments.pop();
   }
 
-  const route = `/${segments.map((segment) => encodeURIComponent(segment)).join('/')}`.replace(/\/$/, '') || '/';
+  const route =
+    `/${segments.map((segment) => encodeURIComponent(segment)).join('/')}`.replace(/\/$/, '') ||
+    '/';
   return {
     route,
     locale: hasSupportedLocale
-      ? configuredLocale ?? requestedLocale ?? 'en'
+      ? (configuredLocale ?? requestedLocale ?? 'en')
       : (supportedLocales[0] ?? 'en'),
   };
 }
