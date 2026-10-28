@@ -23,3 +23,8 @@ Vited 从项目根目录下的 `docs` 目录读取文档。
 
 `README.zh.md` 是首页的中文翻译，`guide/README.zh.md` 是本指南的中文翻译。
 英文页面使用默认路由，中文页面使用 `/zh/` 前缀，例如 `/zh/guide`。
+
+## 在 MDX 中使用 React 组件
+
+请参阅[在 MDX 中使用 React 组件](./mdx-components.zh.mdx)，了解如何在 MDX
+文档中导入并渲染 React 组件。

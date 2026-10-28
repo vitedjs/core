@@ -1,0 +1,22 @@
+---
+title: Using React components in MDX
+---
+
+import Callout from '../../examples/mdx/Callout.tsx';
+
+# Using React components in MDX
+
+MDX supports standard JavaScript imports. Import a component from a project
+source file, then use it as a JSX element in the document:
+
+```mdx
+import Callout from '../../examples/mdx/Callout.tsx';
+
+<Callout>This message is rendered by a React component.</Callout>
+```
+
+The import path is relative to this MDX file. In your project, point it to the
+component's location and make sure any packages used by that component are
+installed in your Vite project.
+
+<Callout>This message is rendered by a React component.</Callout>
