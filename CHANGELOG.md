@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-10-28
+
+### Fixed
+
+- Provide a built-in HTML shell when a project does not have an `index.html`, for both development and production builds.
+
 ## 0.1.0 - 2026-10-27
 
 Initial release.
