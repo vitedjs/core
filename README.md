@@ -29,6 +29,10 @@ page (`guide/start` becomes `guide/start/index.html`). Page frontmatter
 values. The page body remains client-rendered; the generated HTML provides the
 page-specific head for crawlers.
 
+Production builds are written to `docs_dist` by default to avoid conflicts with
+the project's own `dist` directory. A configured Vite `build.outDir` takes
+precedence.
+
 Vited reads documents from the `docs` directory under the Vite project root.
 Vited discovers `.jsx`, `.tsx`, `.md`, and `.mdx` recursively. Directory
 names form route segments, `README.md` is the directory index, and a supported

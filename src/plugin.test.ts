@@ -12,7 +12,7 @@ import { vitedPlugin } from './plugin';
 describe('vitedPlugin()', () => {
   it('uses the core HTML shell when the project has no index.html', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-default-html-'));
-    const output = path.join(root, 'output');
+    const output = path.join(root, 'docs_dist');
     const projectFavicon =
       '<svg xmlns="http://www.w3.org/2000/svg"><title>project icon</title></svg>';
     try {
@@ -43,7 +43,6 @@ describe('vitedPlugin()', () => {
           }),
         ],
         build: {
-          outDir: output,
           rollupOptions: {
             external: ['react', 'react-dom/client', 'react/jsx-runtime'],
           },
@@ -153,7 +152,7 @@ describe('vitedPlugin()', () => {
 
   it('preserves a custom index favicon when the docs directory has none', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'vited-build-custom-favicon-'));
-    const output = path.join(root, 'output');
+    const output = path.join(root, 'docs_dist');
     try {
       await mkdir(path.join(root, 'docs'), { recursive: true });
       await writeFile(
@@ -178,7 +177,6 @@ describe('vitedPlugin()', () => {
         root,
         plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
         build: {
-          outDir: output,
           rollupOptions: {
             external: ['react', 'react-dom/client', 'react/jsx-runtime'],
           },

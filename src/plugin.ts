@@ -46,21 +46,18 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     name: 'vited',
     enforce: 'pre',
     config(config, environment) {
-      if (environment.command !== 'build' || config.build?.rollupOptions?.input !== undefined) {
-        return;
-      }
+      if (environment.command !== 'build') return;
 
       const root = path.resolve(config.root ?? process.cwd());
+      const build: NonNullable<typeof config.build> = {};
+      if (config.build?.outDir === undefined) build.outDir = 'docs_dist';
       if (!existsSync(path.join(root, 'index.html'))) {
         useDefaultHtml = true;
-        return {
-          build: {
-            rollupOptions: {
-              input: clientEntry,
-            },
-          },
-        };
+        if (config.build?.rollupOptions?.input === undefined) {
+          build.rollupOptions = { ...config.build?.rollupOptions, input: clientEntry };
+        }
       }
+      return Object.keys(build).length > 0 ? { build } : undefined;
     },
     async configResolved(resolvedConfig) {
       docsRoot = path.resolve(resolvedConfig.root, 'docs');
