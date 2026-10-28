@@ -40,6 +40,8 @@
   "scripts": {
     "build": "tsdown",
     "dev": "vited dev",
+    "docs:build": "vited build",
+    "docs:dev": "vited dev",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint",
