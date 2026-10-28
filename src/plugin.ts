@@ -92,7 +92,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         return `export default ${JSON.stringify(searchIndex)};`;
       }
       if (id === resolvedClientModuleId) {
-        return createClientModule(docs, packageJSON);
+        return createClientModule(docs, packageJSON, baseURL);
       }
     },
     async transform(source, id) {
@@ -266,7 +266,11 @@ function createPagesModule(pages: DocumentPage[]): string {
   return `${imports.join('\n')}\nexport default [${entries.join(',\n')}];`;
 }
 
-function createClientModule(docs: DocsConfig, packageJSON: Record<string, unknown>): string {
+function createClientModule(
+  docs: DocsConfig,
+  packageJSON: Record<string, unknown>,
+  baseURL: string,
+): string {
   const theme = docs.theme ?? '@vited/theme-mantine';
   return `
     import React from 'react';
@@ -284,7 +288,7 @@ function createClientModule(docs: DocsConfig, packageJSON: Record<string, unknow
       packageJSON: ${JSON.stringify(packageJSON)},
       pages,
       searchIndex,
-      baseURL: ${JSON.stringify(docs.baseURL ?? '/')}
+      baseURL: ${JSON.stringify(baseURL)}
     }));
   `;
 }

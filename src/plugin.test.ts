@@ -112,6 +112,7 @@ describe('vitedPlugin()', () => {
       await build({
         configFile: false,
         root,
+        base: '/docs-site/',
         plugins: [
           vitedPlugin({
             supportedLocales: ['en', 'zh'],
@@ -136,6 +137,7 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('Getting started');
       expect(bundle).toContain('开始');
       expect(bundle).toContain('Unique searchable phrase.');
+      expect(bundle).toMatch(/baseURL.{0,32}\/docs-site\//s);
       expect(bundle).toContain('name:`vited-test-site`');
       expect(bundle).toContain('https://github.com/vitedjs/vited-test-site.git');
       expect(bundle).toContain('https://github.com/sponsors/vitedjs');

@@ -31,12 +31,6 @@ export interface DocsConfig {
    * @default '@vited/theme-mantine'
    */
   theme?: string;
-  /**
-   * The base URL where the site root is located.
-   *
-   * @default '/'
-   */
-  baseURL?: string;
   /** Sidebar menu entries. If not specified, Vited builds the menu from docs. */
   menu?: MenuEntry[];
 }
