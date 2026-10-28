@@ -51,10 +51,27 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       const root = path.resolve(config.root ?? process.cwd());
       const build: NonNullable<typeof config.build> = {};
       if (config.build?.outDir === undefined) build.outDir = 'docs_dist';
+      const rollupOptions = config.build?.rolldownOptions ?? config.build?.rollupOptions;
+      const onLog = rollupOptions?.onLog;
+      build.rolldownOptions = {
+        ...rollupOptions,
+        onLog(level, log, defaultHandler) {
+          if (log.code === 'MODULE_LEVEL_DIRECTIVE') return;
+          if (onLog) {
+            onLog(level, log, defaultHandler);
+          } else {
+            defaultHandler(level, log);
+          }
+        },
+      };
       if (!existsSync(path.join(root, 'index.html'))) {
         useDefaultHtml = true;
-        if (config.build?.rollupOptions?.input === undefined) {
-          build.rollupOptions = { ...config.build?.rollupOptions, input: clientEntry };
+        if (rollupOptions?.input === undefined) {
+          build.rolldownOptions = {
+            ...rollupOptions,
+            ...build.rolldownOptions,
+            input: clientEntry,
+          };
         }
       }
       return Object.keys(build).length > 0 ? { build } : undefined;
