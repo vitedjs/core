@@ -197,7 +197,11 @@ export async function emitStaticHtmlPages({
     outputPaths.add(fileName);
 
     const frontmatter = await readPageFrontmatter(page);
-    const html = applyPageMetadata(htmlShell, docs, packageJSON, frontmatter);
+    const pageMetadata = {
+      ...frontmatter,
+      title: typeof frontmatter['title'] === 'string' ? frontmatter['title'] : page.title,
+    };
+    const html = applyPageMetadata(htmlShell, docs, packageJSON, pageMetadata);
     if (fileName === 'index.html') {
       rootPageHtml = html;
       continue;

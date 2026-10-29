@@ -73,6 +73,27 @@ describe('scanDocs()', () => {
         ['/guide/example', 'en'],
         ['/guide/start', 'zh'],
       ]);
+      expect(pages.map(({ title }) => title)).toEqual(['Home', 'example', '开始']);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the first level-one Markdown heading as the page title', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-doc-titles-'));
+    try {
+      await writeFile(
+        path.join(root, 'guide.md'),
+        '## Not the page title\n\n```md\n# Heading in a code block\n```\n\n# **First** page title\n\n# Later heading',
+      );
+      await writeFile(
+        path.join(root, 'guide.zh.md'),
+        '---\ntitle: Frontmatter title\n---\n# Heading title',
+      );
+
+      const pages = await scanDocs(root, ['en', 'zh']);
+
+      expect(pages.map(({ title }) => title)).toEqual(['First page title', 'Frontmatter title']);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

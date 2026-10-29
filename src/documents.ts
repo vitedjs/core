@@ -1,5 +1,10 @@
 import { readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+
+import matter from 'gray-matter';
+import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
 
 import type { DocumentPage } from './define-config';
 
@@ -10,21 +15,55 @@ export async function scanDocs(
   supportedLocales: string[] = [],
 ): Promise<DocumentPage[]> {
   const files = await findDocuments(root);
-  const pages = files.map((file) => {
-    const relativePath = path.relative(root, file);
-    const { route, locale } = getPageRoute(relativePath, supportedLocales);
-    return {
-      file,
-      path: route,
-      locale,
-      title: titleFromRoute(route),
-      frontmatter: {},
-    };
-  });
+  const pages = await Promise.all(
+    files.map(async (file) => {
+      const relativePath = path.relative(root, file);
+      const { route, locale } = getPageRoute(relativePath, supportedLocales);
+      return {
+        file,
+        path: route,
+        locale,
+        title: await titleFromDocument(file, route),
+        frontmatter: {},
+      };
+    }),
+  );
 
   return pages.toSorted(
     (left, right) => left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale),
   );
+}
+
+async function titleFromDocument(file: string, route: string): Promise<string> {
+  const extension = path.extname(file).toLowerCase();
+  if (extension !== '.md' && extension !== '.mdx') return titleFromRoute(route);
+
+  let source: string;
+  try {
+    source = await readFile(file, 'utf8');
+  } catch (error) {
+    throw new Error(`Failed to read documentation page ${file}`, { cause: error });
+  }
+
+  const parsed = matter(source);
+  if (typeof parsed.data.title === 'string') return parsed.data.title;
+
+  const heading = marked
+    .lexer(parsed.content)
+    .find((token) => token.type === 'heading' && token.depth === 1);
+  if (!heading || heading.type !== 'heading') return titleFromRoute(route);
+
+  const headingHtml = marked.parseInline(heading.text, { async: false });
+  if (typeof headingHtml !== 'string') {
+    throw new TypeError(`Failed to parse documentation page title: ${file}`);
+  }
+  const title = sanitizeHtml(headingHtml, {
+    allowedTags: [],
+    allowedAttributes: {},
+  })
+    .replaceAll(/\s+/g, ' ')
+    .trim();
+  return title || titleFromRoute(route);
 }
 
 export function getPageRoute(

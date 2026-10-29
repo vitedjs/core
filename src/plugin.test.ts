@@ -219,6 +219,10 @@ describe('vitedPlugin()', () => {
         path.join(docsRoot, 'README.md'),
         '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
+      await writeFile(
+        path.join(docsRoot, 'guide', 'no-frontmatter.md'),
+        '# **Page title from heading**\n\nPage content.',
+      );
       const projectFavicon = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
       await writeFile(path.join(docsRoot, 'favicon.png'), projectFavicon);
       await writeFile(
@@ -253,6 +257,10 @@ describe('vitedPlugin()', () => {
         path.join(output, 'zh', 'guide', 'start', 'index.html'),
         'utf8',
       );
+      const noFrontmatterPageHtml = await readFile(
+        path.join(output, 'guide', 'no-frontmatter', 'index.html'),
+        'utf8',
+      );
       const componentPageHtml = await readFile(
         path.join(output, 'api', 'client', 'index.html'),
         'utf8',
@@ -272,6 +280,7 @@ describe('vitedPlugin()', () => {
       expect(localizedPageHtml).toContain('<meta name="keywords" content="guide, start" />');
       expect(localizedPageHtml).not.toContain('<h1');
       expect(localizedPageHtml).not.toContain('Unique searchable phrase.');
+      expect(noFrontmatterPageHtml).toContain('<title>Page title from heading</title>');
       expect(componentPageHtml).toContain(
         '<meta name="description" content="Global site description" />',
       );
