@@ -8,6 +8,11 @@ function rewriteMarkdownLinks(url: string) {
     return url;
   }
 
+  const directoryUrl = url.replace(/(^|\/)README\.mdx?(?=[?#]|$)/i, '$1');
+  if (directoryUrl !== url) {
+    return directoryUrl || './';
+  }
+
   return url.replace(/\.mdx?(?=[?#]|$)/i, '');
 }
 
