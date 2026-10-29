@@ -7,6 +7,7 @@ import path from 'node:path';
 import { build, createServer } from 'vite';
 import { describe, expect, it } from 'vitest';
 
+import { createMdxPlugin } from './mdx-plugin';
 import { vitedPlugin } from './plugin';
 
 describe('vitedPlugin()', () => {
@@ -92,7 +93,7 @@ describe('vitedPlugin()', () => {
       await build({
         configFile: false,
         root,
-        plugins: [vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
+        plugins: [createMdxPlugin(), vitedPlugin({ theme: path.join(root, 'theme.mjs') })],
         build: {
           outDir: output,
           rollupOptions: {
@@ -239,6 +240,7 @@ describe('vitedPlugin()', () => {
         root,
         base: '/docs-site/',
         plugins: [
+          createMdxPlugin(),
           vitedPlugin({
             supportedLocales: ['en', 'zh'],
             theme: path.join(root, 'theme.mjs'),
@@ -298,6 +300,8 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('language-c#');
       expect(bundle).toContain('markdownValue');
       expect(bundle).toContain('mdxValue');
+      expect(bundle).not.toContain('dangerouslySetInnerHTML');
+      expect(bundle).not.toContain('<h1>Documentation home</h1>');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

@@ -15,7 +15,7 @@ describe('defineConfig()', () => {
 
     expect(config.base).toBe('/manual/');
     expect(config.resolve?.dedupe).toEqual(['react', 'react-dom']);
-    expect(config.plugins).toHaveLength(1);
+    expect(config.plugins).toHaveLength(2);
     expect(config.docs?.supportedLocales).toEqual(['en', 'zh']);
   });
 

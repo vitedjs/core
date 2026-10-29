@@ -16,7 +16,6 @@ import {
   readProjectFavicon,
   type Favicon,
 } from './html';
-import { transformMarkdown } from './markdown';
 import { createSearchIndex } from './search-index';
 import {
   clientModuleId,
@@ -106,17 +105,6 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       }
       if (id === resolvedClientModuleId) {
         return createClientModule(docs, packageJSON, baseURL);
-      }
-    },
-    async transform(source, id) {
-      const extension = path.extname(id).toLowerCase();
-      const relativePath = path.relative(docsRoot, id);
-      if (
-        ['.md', '.mdx'].includes(extension) &&
-        !relativePath.startsWith('..') &&
-        !path.isAbsolute(relativePath)
-      ) {
-        return transformMarkdown(source, id);
       }
     },
     generateBundle: {

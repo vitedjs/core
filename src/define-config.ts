@@ -1,5 +1,6 @@
 import type { UserConfig as ViteUserConfig } from 'vite';
 
+import { createMdxPlugin } from './mdx-plugin';
 import { vitedPlugin } from './plugin';
 
 export function defineConfig(config: UserConfig): UserConfig {
@@ -9,7 +10,7 @@ export function defineConfig(config: UserConfig): UserConfig {
       ...config.resolve,
       dedupe: [...new Set([...(config.resolve?.dedupe ?? []), 'react', 'react-dom'])],
     },
-    plugins: [...(config.plugins ?? []), vitedPlugin(config.docs)],
+    plugins: [createMdxPlugin(), ...(config.plugins ?? []), vitedPlugin(config.docs)],
   };
 }
 

@@ -41,6 +41,10 @@ locale uses the unprefixed route; other locales use a `/<locale>/` prefix. For e
 `README.zh.md` is available at `/zh/`. Markdown frontmatter is available as
 each page's `frontmatter`; its `title` becomes the page title.
 
+Vited compiles `.md` and `.mdx` files into React components with
+`@mdx-js/rollup`. Themes can customize rendered Markdown elements through the
+MDX `components` prop.
+
 Place `favicon.svg` or `favicon.png` in `docs` to use a project favicon. SVG is
 preferred when both files exist. If neither file exists, Vited does not add a
 favicon; any favicon already declared in the project's `index.html` is preserved.
