@@ -19,24 +19,36 @@ export async function scanDocs(
     files.map(async (file) => {
       const relativePath = path.relative(root, file);
       const { route, locale } = getPageRoute(relativePath, supportedLocales);
+      const metadata = await metadataFromDocument(file, route);
       return {
         file,
         path: route,
         locale,
-        title: await titleFromDocument(file, route),
+        title: metadata.title,
         frontmatter: {},
+        order: metadata.order,
       };
     }),
   );
 
-  return pages.toSorted(
-    (left, right) => left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale),
-  );
+  return pages
+    .toSorted((left, right) => {
+      if (left.order !== undefined && right.order !== undefined && left.order !== right.order) {
+        return left.order - right.order;
+      }
+      if (left.order !== undefined) return -1;
+      if (right.order !== undefined) return 1;
+      return left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale);
+    })
+    .map(({ order: _order, ...page }) => page);
 }
 
-async function titleFromDocument(file: string, route: string): Promise<string> {
+async function metadataFromDocument(
+  file: string,
+  route: string,
+): Promise<{ title: string; order?: number }> {
   const extension = path.extname(file).toLowerCase();
-  if (extension !== '.md' && extension !== '.mdx') return titleFromRoute(route);
+  if (extension !== '.md' && extension !== '.mdx') return { title: titleFromRoute(route) };
 
   let source: string;
   try {
@@ -46,12 +58,16 @@ async function titleFromDocument(file: string, route: string): Promise<string> {
   }
 
   const parsed = matter(source);
-  if (typeof parsed.data.title === 'string') return parsed.data.title;
+  const order =
+    typeof parsed.data.order === 'number' && Number.isFinite(parsed.data.order)
+      ? parsed.data.order
+      : undefined;
+  if (typeof parsed.data.title === 'string') return { title: parsed.data.title, order };
 
   const heading = marked
     .lexer(parsed.content)
     .find((token) => token.type === 'heading' && token.depth === 1);
-  if (!heading || heading.type !== 'heading') return titleFromRoute(route);
+  if (!heading || heading.type !== 'heading') return { title: titleFromRoute(route), order };
 
   const headingHtml = marked.parseInline(heading.text, { async: false });
   if (typeof headingHtml !== 'string') {
@@ -63,7 +79,7 @@ async function titleFromDocument(file: string, route: string): Promise<string> {
   })
     .replaceAll(/\s+/g, ' ')
     .trim();
-  return title || titleFromRoute(route);
+  return { title: title || titleFromRoute(route), order };
 }
 
 export function getPageRoute(

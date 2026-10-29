@@ -1,3 +1,8 @@
+---
+title: Installation
+order: 10
+---
+
 # Installation
 
 ## Quick start

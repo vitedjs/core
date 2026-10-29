@@ -19,6 +19,8 @@ docs: {
 }
 ```
 
+所有 Vited 专属选项和 Vite 配置请参阅[配置文档](../configuration.zh.md)。
+
 Vited 从项目根目录下的 `docs` 目录读取文档。
 
 `README.zh.md` 是首页的中文翻译，`guide/README.zh.md` 是本指南的中文翻译。

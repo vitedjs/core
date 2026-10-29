@@ -20,6 +20,9 @@ docs: {
 }
 ```
 
+See the [configuration reference](../configuration.md) for all Vited-specific
+and Vite options.
+
 Vited reads documentation from the `docs` directory under the project root.
 
 Fenced code blocks are syntax-highlighted by the default Mantine theme when

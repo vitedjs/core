@@ -98,4 +98,25 @@ describe('scanDocs()', () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it('sorts pages by frontmatter order before unordered pages', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-doc-order-'));
+    try {
+      await writeFile(path.join(root, 'README.md'), '---\norder: 0\n---\n# Home');
+      await writeFile(path.join(root, 'installation.md'), '---\norder: 10\n---\n# Installation');
+      await writeFile(path.join(root, 'configuration.md'), '---\norder: 20\n---\n# Configuration');
+      await writeFile(path.join(root, 'reference.md'), '# Reference');
+
+      const pages = await scanDocs(root);
+
+      expect(pages.map(({ path: route }) => route)).toEqual([
+        '/',
+        '/installation',
+        '/configuration',
+        '/reference',
+      ]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
