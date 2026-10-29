@@ -2,19 +2,20 @@
 
 ## 快速开始
 
-使用交互式设置创建 Vited 站点：
+使用交互式设置创建 Vited 站点，或将 Vited 添加到现有项目：
 
 ```bash
 npm create @vited
 ```
 
-按照提示选择项目目录、主题，以及是否安装依赖。设置过程会创建
-`vited.config.ts`、`docs` 目录，以及 `docs:dev` / `docs:build` 脚本。
+在目标项目目录下运行此命令，或在提示中选择其他目录。然后按照提示选择
+主题，以及是否安装依赖。设置过程会按需创建 `vited.config.ts`、`docs` 目录，
+以及 `docs:dev` / `docs:build` 脚本。
 
 ## 手动设置
 
-要在现有项目中添加 Vited，请安装 CLI、Core 集成、默认的 Mantine 主题和
-Vite：
+另外，也可以在现有项目中手动配置 Vited：安装 CLI、Core 集成、默认的 Mantine
+主题和 Vite：
 
 ```bash
 npm install --save-dev @vited/cli @vited/core @vited/theme-mantine vite
@@ -45,11 +46,26 @@ export default defineConfig({
 });
 ```
 
-创建 `docs` 目录，并添加 `docs/README.md` 作为首页。然后启动开发服务器或
-创建生产构建：
+创建 `docs` 目录，并添加 `docs/README.md` 作为首页。
+
+## 运行和构建
+
+交互式设置和手动设置都会配置 `docs:dev` 和 `docs:build` 脚本。使用以下命令
+即可分别启动开发服务器和创建生产构建。
+
+### 开发服务器
+
+使用以下命令启动本地开发服务器：
 
 ```bash
 npm run docs:dev
+```
+
+### 生产构建
+
+使用以下命令创建生产构建：
+
+```bash
 npm run docs:build
 ```
 

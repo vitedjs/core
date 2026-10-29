@@ -2,20 +2,22 @@
 
 ## Quick start
 
-Create a Vited site with the interactive setup:
+Create a Vited site or add Vited to an existing project with the interactive
+setup:
 
 ```bash
 npm create @vited
 ```
 
-Follow the prompts to choose a project directory, theme, and whether to install
-dependencies. The setup creates `vited.config.ts`, a `docs` directory, and
-`docs:dev` / `docs:build` scripts.
+Run the command from the target project directory, or choose another directory
+when prompted. Follow the prompts to choose a theme and whether to install
+dependencies. The setup creates `vited.config.ts` if needed, a `docs` directory,
+and `docs:dev` / `docs:build` scripts.
 
 ## Manual setup
 
-To add Vited to an existing project, install the CLI, core integration, default
-Mantine theme, and Vite:
+Alternatively, to set up Vited manually in an existing project, install the CLI,
+core integration, default Mantine theme, and Vite:
 
 ```bash
 npm install --save-dev @vited/cli @vited/core @vited/theme-mantine vite
@@ -46,11 +48,26 @@ export default defineConfig({
 });
 ```
 
-Create a `docs` directory and add `docs/README.md` as the home page. Start the
-development server or create a production build with:
+Create a `docs` directory and add `docs/README.md` as the home page.
+
+## Run and build
+
+Both the interactive and manual setups provide the `docs:dev` and `docs:build`
+scripts.
+
+### Development server
+
+Start the local development server with:
 
 ```bash
 npm run docs:dev
+```
+
+### Production build
+
+Create a production build with:
+
+```bash
 npm run docs:build
 ```
 
