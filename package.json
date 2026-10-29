@@ -54,6 +54,7 @@
     "@mdx-js/rollup": "^3.1.1",
     "gray-matter": "^4.0.3",
     "marked": "^18.1.2",
+    "md-url-path": "^1.0.1",
     "remark-frontmatter": "^5.0.0",
     "remark-link-rewrite": "^1.0.7",
     "remark-mdx-frontmatter": "^5.2.0",
