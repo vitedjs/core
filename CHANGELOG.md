@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-10-30
+
+### Added
+
+- Resolve page URLs in Vited, so themes consume data instead of building paths: pages carry `pathname` and `url`, and themes receive `routes`, `routeIndex`, `basePath`, and menu entries with `pathnames` and `urls` per locale.
+- `routes` covers every page route in every configured locale, including the page that renders it and the translation it falls back to.
+- Search documents carry the `pathname` that opens the page.
+
+### Changed
+
+- Page URLs are directory style and end with a slash (`/guide/start/`, `/zh/guide/start/`). Routes resolve with and without the trailing slash.
+
 ## 0.2.0 - 2026-10-30
 
 ### Added
