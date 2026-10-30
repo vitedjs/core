@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2026-10-30
+
+### Fixed
+
+- Prefix the favicon URL with the configured base only once in development, where Vite already prepends the base to root-relative HTML URLs.
+
 ## 0.4.0 - 2026-10-30
 
 ### Added
