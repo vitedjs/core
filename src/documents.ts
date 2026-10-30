@@ -8,7 +8,23 @@ import sanitizeHtml from 'sanitize-html';
 
 import type { DocumentPage } from './define-config';
 
-const documentExtensions = new Set(['.md', '.mdx', '.jsx', '.tsx']);
+const markdownExtensions = new Set(['.md', '.mdx']);
+
+/** Component pages must be named `*.page.jsx` or `*.page.tsx`; other components are not pages. */
+const pageComponentPattern = /\.page\.[jt]sx$/i;
+const pageSuffixPattern = /\.page$/i;
+
+function isMarkdownFile(file: string): boolean {
+  return markdownExtensions.has(path.extname(file).toLowerCase());
+}
+
+function isPageComponentFile(file: string): boolean {
+  return pageComponentPattern.test(file);
+}
+
+function isDocumentFile(file: string): boolean {
+  return isMarkdownFile(file) || isPageComponentFile(file);
+}
 
 export async function scanDocs(
   root: string,
@@ -47,8 +63,7 @@ async function metadataFromDocument(
   file: string,
   route: string,
 ): Promise<{ title: string; order?: number; frontmatter: Record<string, unknown> }> {
-  const extension = path.extname(file).toLowerCase();
-  if (extension !== '.md' && extension !== '.mdx') {
+  if (!isMarkdownFile(file)) {
     return { title: titleFromRoute(route), frontmatter: {} };
   }
 
@@ -94,13 +109,16 @@ export function getPageRoute(
   supportedLocales: string[] = [],
 ): { route: string; locale: string } {
   const normalizedPath = file.replaceAll('\\', '/');
-  const extension = path.extname(normalizedPath).toLowerCase();
-  if (!documentExtensions.has(extension)) {
-    throw new Error(`Unsupported documentation file extension: ${file}`);
+  if (!isDocumentFile(normalizedPath)) {
+    throw new Error(`Unsupported documentation file: ${file}`);
   }
+  const extension = path.extname(normalizedPath).toLowerCase();
 
   const basename = path.posix.basename(normalizedPath, extension);
-  const localeMatch = basename.match(/\.([a-z]{2}(?:-[a-z]{2})?)$/i);
+  const nameWithoutPageSuffix = isPageComponentFile(normalizedPath)
+    ? basename.replace(pageSuffixPattern, '')
+    : basename;
+  const localeMatch = nameWithoutPageSuffix.match(/\.([a-z]{2}(?:-[a-z]{2})?)$/i);
   const requestedLocale = localeMatch?.[1];
   const configuredLocale = requestedLocale
     ? supportedLocales.find((item) => item.toLowerCase() === requestedLocale.toLowerCase())
@@ -108,13 +126,13 @@ export function getPageRoute(
   const hasSupportedLocale =
     requestedLocale !== undefined &&
     (supportedLocales.length === 0 || configuredLocale !== undefined);
-  const stem =
+  const name =
     hasSupportedLocale && requestedLocale
-      ? basename.slice(0, -requestedLocale.length - 1)
-      : basename;
+      ? nameWithoutPageSuffix.slice(0, -requestedLocale.length - 1)
+      : nameWithoutPageSuffix;
   const directory = path.posix.dirname(normalizedPath);
-  const segments = [...(directory === '.' ? [] : directory.split('/')), stem];
-  if (stem.toLowerCase() === 'readme') {
+  const segments = [...(directory === '.' ? [] : directory.split('/')), name];
+  if (name.toLowerCase() === 'readme') {
     segments.pop();
   }
 
@@ -137,7 +155,7 @@ async function findDocuments(directory: string): Promise<string[]> {
       if (entry.isDirectory()) {
         return findDocuments(file);
       }
-      if (entry.isFile() && documentExtensions.has(path.extname(entry.name).toLowerCase())) {
+      if (entry.isFile() && isDocumentFile(entry.name)) {
         return [file];
       }
       return [];

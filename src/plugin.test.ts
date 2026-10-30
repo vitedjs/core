@@ -348,7 +348,7 @@ describe('vitedPlugin()', () => {
         '---\ntitle: 开始\ndescription: Guide page description\nkeywords: [guide, start]\n---\n# Getting started\n\nUnique searchable phrase.\n\n[Previous](../no-frontmatter.md#heading)\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
       );
       await writeFile(
-        path.join(docsRoot, 'api', 'client.tsx'),
+        path.join(docsRoot, 'api', 'client.page.tsx'),
         'export default function ClientPage() { return null; }',
       );
 

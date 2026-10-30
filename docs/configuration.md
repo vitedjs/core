@@ -66,7 +66,7 @@ An entry can use these properties:
 | ---------- | ------------------------------------------------------------------------------ |
 | `text`     | Menu label.                                                                    |
 | `path`     | Internal documentation route, such as `/guide`.                                |
-| `file`     | Documentation source file (`.md`, `.mdx`, `.jsx`, or `.tsx`).                  |
+| `file`     | Documentation source file (`.md`, `.mdx`, `.page.jsx`, or `.page.tsx`).        |
 | `link`     | External URL.                                                                  |
 | `divider`  | Set to `true` to render a divider; other properties on that entry are ignored. |
 | `flag`     | Optional marker: `experimental`, `new`, or `deprecated`.                       |

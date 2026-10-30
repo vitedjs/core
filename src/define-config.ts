@@ -61,7 +61,7 @@ export interface MenuEntry {
   text?: string;
   /** Route path if it is linked to an internal page. */
   path?: string;
-  /** Document file, *.mdx, *.md, *.jsx, *.tsx */
+  /** Document file, *.mdx, *.md, *.page.jsx, *.page.tsx */
   file?: string;
   /** External link. */
   link?: string;
