@@ -1,13 +1,14 @@
 ---
-title: 在 MDX 中使用 React 组件
+title: React 组件
+order: 34
 ---
 
 import Callout from '../../examples/mdx/callout.tsx';
 
-# 在 MDX 中使用 React 组件
+# React 组件
 
-MDX 支持标准 JavaScript 导入语法。先从项目源码文件导入组件，再像 JSX
-元素一样在文档中使用：
+`.mdx` 文档会被编译成 React 组件，因此支持标准 JavaScript 导入语法。先从项目源码文件
+导入组件，再像 JSX 元素一样在文档中使用：
 
 ```mdx
 import Callout from '../../examples/mdx/callout.tsx';
