@@ -37,11 +37,11 @@ export async function scanDocs(
 
   return pages
     .toSorted((left, right) => {
-      if (left.order !== undefined && right.order !== undefined && left.order !== right.order) {
-        return left.order - right.order;
+      if (left.order !== undefined || right.order !== undefined) {
+        if (left.order === undefined) return 1;
+        if (right.order === undefined) return -1;
+        if (left.order !== right.order) return left.order - right.order;
       }
-      if (left.order !== undefined) return -1;
-      if (right.order !== undefined) return 1;
       return left.path.localeCompare(right.path) || left.locale.localeCompare(right.locale);
     })
     .map(({ order: _order, ...page }) => page);

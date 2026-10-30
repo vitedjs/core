@@ -334,7 +334,7 @@ describe('vitedPlugin()', () => {
       );
       await writeFile(
         path.join(docsRoot, 'README.md'),
-        '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n[Installation](./installation.md) [Home](./README.md) [Nested home](./foo/bar/README.md) [External](https://example.com/guide.md)\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
+        '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n[Installation](./installation.md) [Home](./README.md) [Nested home](./foo/bar/README.md) [MDX guide](./guide/start.mdx) [External](https://example.com/guide.md)\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
       await writeFile(
         path.join(docsRoot, 'guide', 'no-frontmatter.md'),
@@ -404,6 +404,8 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('markdownValue');
       expect(bundle).toContain('mdxValue');
       expect(bundle).toContain('href:`./installation/`');
+      expect(bundle).toContain('href:`./guide/start/`');
+      expect(bundle).not.toContain('guide/start.mdx');
       expect(bundle).not.toContain('./installation.md');
       expect(bundle).toContain('href:`./`');
       expect(bundle).not.toContain('./README.md');

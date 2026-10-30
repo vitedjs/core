@@ -16,12 +16,16 @@
 
 ### Fixed
 
+- Sort pages that share the same `order` value by route instead of leaving their order undefined.
+- Rewrite links to `.mdx` documents into clean URLs, as already done for `.md` links.
 - Hot update documentation pages while editing: content edits refresh the page component in place, and frontmatter, added, or removed documents update the sidebar and search index without a full page reload.
 
 ## 0.1.1 - 2026-10-28
 
 ### Fixed
 
+- Sort pages that share the same `order` value by route instead of leaving their order undefined.
+- Rewrite links to `.mdx` documents into clean URLs, as already done for `.md` links.
 - Provide a built-in HTML shell when a project does not have an `index.html`, for both development and production builds.
 
 ## 0.1.0 - 2026-10-27

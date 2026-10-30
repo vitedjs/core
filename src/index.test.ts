@@ -124,4 +124,20 @@ describe('scanDocs()', () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it('sorts pages with equal order values by route', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-doc-order-ties-'));
+    try {
+      await writeFile(path.join(root, 'setup.md'), '---\norder: 10\n---\n# Setup');
+      await mkdir(path.join(root, 'guide'));
+      await writeFile(path.join(root, 'guide', 'README.md'), '---\norder: 10\n---\n# Guide');
+      await writeFile(path.join(root, 'api.md'), '---\norder: 10\n---\n# API');
+
+      const pages = await scanDocs(root);
+
+      expect(pages.map(({ path: route }) => route)).toEqual(['/api', '/guide', '/setup']);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
