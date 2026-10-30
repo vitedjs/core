@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 - 2026-10-30
+
+### Added
+
+- Themes receive the URL of the project favicon, so they can display it in the site header.
+
+### Changed
+
+- Emit the project favicon (`favicon.svg` or `favicon.png`) as a static file next to the generated pages and serve it from the development server, instead of embedding it as a data URI.
+
 ## 0.3.0 - 2026-10-30
 
 ### Added
