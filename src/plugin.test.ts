@@ -7,8 +7,15 @@ import path from 'node:path';
 import { build, createServer } from 'vite';
 import { describe, expect, it } from 'vitest';
 
+import { defineConfig } from './index';
 import { createMdxPlugin } from './mdx-plugin';
 import { vitedPlugin } from './plugin';
+import {
+  pagesModuleId,
+  resolvedPagesModuleId,
+  resolvedSearchModuleId,
+  searchModuleId,
+} from './virtual-modules';
 
 describe('vitedPlugin()', () => {
   it('uses the core HTML shell when the project has no index.html', async () => {
@@ -143,6 +150,116 @@ describe('vitedPlugin()', () => {
         await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
           code: 'ENOENT',
         });
+      } finally {
+        await server.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('hot updates documents without regenerating pages for content-only edits', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-dev-hmr-'));
+    const docsRoot = path.join(root, 'docs');
+    const documentFile = path.join(docsRoot, 'README.md');
+    try {
+      await mkdir(docsRoot, { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(documentFile, '---\ntitle: Home\n---\n# Home\n');
+      await writeFile(
+        path.join(root, 'jsx-stub.mjs'),
+        'export const Fragment = Symbol.for("react.fragment");\nexport const jsx = () => null;\nexport const jsxs = () => null;\nexport const jsxDEV = () => null;\n',
+      );
+
+      const server = await createServer({
+        configFile: false,
+        root,
+        plugins: [createMdxPlugin(), vitedPlugin()],
+        logLevel: 'silent',
+        resolve: { alias: { 'react/jsx-dev-runtime': path.join(root, 'jsx-stub.mjs') } },
+        server: { host: '127.0.0.1', port: 0 },
+      });
+
+      try {
+        await server.listen();
+        const environment = server.environments.client;
+        await environment.transformRequest('/docs/README.md?import');
+        const pagesModuleSource = await environment.transformRequest(pagesModuleId);
+        await environment.transformRequest(searchModuleId);
+        expect(pagesModuleSource?.code).toContain('frontmatter: {"title":"Home"}');
+
+        const plugin = server.config.plugins.find(({ name }) => name === 'vited');
+        const hotUpdate = plugin?.hotUpdate;
+        if (typeof hotUpdate !== 'function') {
+          throw new TypeError('vited plugin does not implement hotUpdate()');
+        }
+        const documentModules = [...(environment.moduleGraph.getModulesByFile(documentFile) ?? [])];
+        const pluginContext = { environment } as unknown as ThisParameterType<typeof hotUpdate>;
+        const hotUpdateOptions = (type: 'update' | 'delete') => ({
+          type,
+          file: documentFile,
+          timestamp: Date.now(),
+          modules: documentModules,
+          read: () => readFile(documentFile, 'utf8'),
+          server,
+        });
+
+        await writeFile(documentFile, '---\ntitle: Home\n---\n# Home page\n');
+        const contentModules = await hotUpdate.call(pluginContext, hotUpdateOptions('update'));
+        expect(contentModules?.map(({ id }) => id)).toEqual(documentModules.map(({ id }) => id));
+
+        await writeFile(documentFile, '---\ntitle: Home page\n---\n# Home page\n');
+        const metadataModules = await hotUpdate.call(pluginContext, hotUpdateOptions('update'));
+        expect(metadataModules?.map(({ id }) => id)).toEqual(
+          expect.arrayContaining([
+            ...documentModules.map(({ id }) => id),
+            resolvedPagesModuleId,
+            resolvedSearchModuleId,
+          ]),
+        );
+
+        const deletedModules = await hotUpdate.call(pluginContext, hotUpdateOptions('delete'));
+        expect(deletedModules?.map(({ id }) => id)).not.toContain(documentModules[0]?.id);
+      } finally {
+        await server.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('compiles documents into React Refresh boundaries in development', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-dev-refresh-'));
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(path.join(root, 'docs', 'README.md'), '---\ntitle: Home\n---\n# Home\n');
+      await writeFile(
+        path.join(root, 'jsx-stub.mjs'),
+        'export const Fragment = Symbol.for("react.fragment");\nexport const jsx = () => null;\nexport const jsxs = () => null;\nexport const jsxDEV = () => null;\n',
+      );
+
+      const config = defineConfig({});
+      const server = await createServer({
+        ...config,
+        configFile: false,
+        root,
+        logLevel: 'silent',
+        resolve: {
+          ...config.resolve,
+          dedupe: [],
+          alias: { 'react/jsx-dev-runtime': path.join(root, 'jsx-stub.mjs') },
+        },
+        server: { host: '127.0.0.1', port: 0 },
+      });
+
+      try {
+        await server.listen();
+        const documentModule =
+          await server.environments.client.transformRequest('/docs/README.md?import');
+        expect(documentModule?.code).toContain('import.meta.hot.accept');
+        expect(documentModule?.code).toContain('$RefreshReg$');
+        expect(documentModule?.code).not.toContain('export const frontmatter');
       } finally {
         await server.close();
       }

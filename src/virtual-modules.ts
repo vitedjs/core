@@ -1,5 +1,3 @@
-import path from 'node:path';
-
 import type { DocsConfig, DocumentPage } from './define-config';
 
 export const pagesModuleId = 'virtual:vited/pages';
@@ -13,22 +11,15 @@ export function createPagesModule(pages: DocumentPage[]): string {
   const imports = pages.map(
     (page, index) => `import * as doc${index} from ${JSON.stringify(page.file)};`,
   );
-  const entries = pages.map((page, index) => {
-    const hasFrontmatter = ['.md', '.mdx'].includes(path.extname(page.file).toLowerCase());
-    const title = hasFrontmatter
-      ? `typeof doc${index}.frontmatter?.title === 'string'
-      ? doc${index}.frontmatter.title
-      : ${JSON.stringify(page.title)}`
-      : JSON.stringify(page.title);
-    const frontmatter = hasFrontmatter ? `doc${index}.frontmatter ?? {}` : '{}';
-    return `{
+  const entries = pages.map(
+    (page, index) => `{
     path: ${JSON.stringify(page.path)},
     locale: ${JSON.stringify(page.locale)},
-    title: ${title},
-    frontmatter: ${frontmatter},
+    title: ${JSON.stringify(page.title)},
+    frontmatter: ${JSON.stringify(page.frontmatter)},
     component: doc${index}.default
-  }`;
-  });
+  }`,
+  );
 
   return `${imports.join('\n')}\nexport default [${entries.join(',\n')}];`;
 }
@@ -47,7 +38,12 @@ export function createClientModule(
     import searchIndex from '${searchModuleId}';
     const target = document.getElementById('root');
     if (!target) throw new Error('Vited could not find the #root element in index.html');
-    createRoot(target).render(React.createElement(Theme, {
+    const root = import.meta.hot?.data.root ?? createRoot(target);
+    if (import.meta.hot) {
+      import.meta.hot.data.root = root;
+      import.meta.hot.accept();
+    }
+    root.render(React.createElement(Theme, {
       title: ${JSON.stringify(docs.title ?? '')},
       description: ${JSON.stringify(docs.description ?? '')},
       supportedLocales: ${JSON.stringify(docs.supportedLocales ?? [])},

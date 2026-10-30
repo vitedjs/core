@@ -25,7 +25,7 @@ export async function scanDocs(
         path: route,
         locale,
         title: metadata.title,
-        frontmatter: {},
+        frontmatter: metadata.frontmatter,
         order: metadata.order,
       };
     }),
@@ -46,9 +46,11 @@ export async function scanDocs(
 async function metadataFromDocument(
   file: string,
   route: string,
-): Promise<{ title: string; order?: number }> {
+): Promise<{ title: string; order?: number; frontmatter: Record<string, unknown> }> {
   const extension = path.extname(file).toLowerCase();
-  if (extension !== '.md' && extension !== '.mdx') return { title: titleFromRoute(route) };
+  if (extension !== '.md' && extension !== '.mdx') {
+    return { title: titleFromRoute(route), frontmatter: {} };
+  }
 
   let source: string;
   try {
@@ -58,16 +60,21 @@ async function metadataFromDocument(
   }
 
   const parsed = matter(source);
+  const frontmatter = parsed.data as Record<string, unknown>;
   const order =
-    typeof parsed.data.order === 'number' && Number.isFinite(parsed.data.order)
-      ? parsed.data.order
+    typeof frontmatter.order === 'number' && Number.isFinite(frontmatter.order)
+      ? frontmatter.order
       : undefined;
-  if (typeof parsed.data.title === 'string') return { title: parsed.data.title, order };
+  if (typeof frontmatter.title === 'string') {
+    return { title: frontmatter.title, order, frontmatter };
+  }
 
   const heading = marked
     .lexer(parsed.content)
     .find((token) => token.type === 'heading' && token.depth === 1);
-  if (!heading || heading.type !== 'heading') return { title: titleFromRoute(route), order };
+  if (!heading || heading.type !== 'heading') {
+    return { title: titleFromRoute(route), order, frontmatter };
+  }
 
   const headingHtml = marked.parseInline(heading.text, { async: false });
   if (typeof headingHtml !== 'string') {
@@ -79,7 +86,7 @@ async function metadataFromDocument(
   })
     .replaceAll(/\s+/g, ' ')
     .trim();
-  return { title: title || titleFromRoute(route), order };
+  return { title: title || titleFromRoute(route), order, frontmatter };
 }
 
 export function getPageRoute(

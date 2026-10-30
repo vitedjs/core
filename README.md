@@ -45,6 +45,10 @@ Vited compiles `.md` and `.mdx` files into React components with
 `@mdx-js/rollup`. Themes can customize rendered Markdown elements through the
 MDX `components` prop.
 
+While the development server runs, editing a document refreshes the page
+component in place. Frontmatter changes, and added or removed documents, update
+the sidebar and search index without a full page reload.
+
 Place `favicon.svg` or `favicon.png` in `docs` to use a project favicon. SVG is
 preferred when both files exist. If neither file exists, Vited does not add a
 favicon; any favicon already declared in the project's `index.html` is preserved.

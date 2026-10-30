@@ -11,7 +11,14 @@ export function defineConfig(config: UserConfig): UserConfig {
       ...config.resolve,
       dedupe: [...new Set([...(config.resolve?.dedupe ?? []), 'react', 'react-dom'])],
     },
-    plugins: [react(), createMdxPlugin(), ...(config.plugins ?? []), vitedPlugin(config.docs)],
+    // Markdown and MDX pages are compiled into React components, so they need React Refresh
+    // support as well in order to update in place while editing.
+    plugins: [
+      react({ include: [/\.[tj]sx?$/, /\.mdx?$/] }),
+      createMdxPlugin(),
+      ...(config.plugins ?? []),
+      vitedPlugin(config.docs),
+    ],
   };
 }
 

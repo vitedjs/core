@@ -182,32 +182,65 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
         });
       }
     },
-    async handleHotUpdate(context) {
+    async hotUpdate(context) {
+      if (this.environment.config.consumer !== 'client') return;
+
+      const moduleGraph = this.environment.moduleGraph;
+
       if (context.file === packageJsonPath) {
         packageJSON = await readPackageJson(packageJsonPath);
-        const clientModule = context.server.moduleGraph.getModuleById(resolvedClientModuleId);
-        if (clientModule) {
-          context.server.moduleGraph.invalidateModule(clientModule);
-          return [clientModule];
-        }
-        return;
+        const clientModule = moduleGraph.getModuleById(resolvedClientModuleId);
+        if (!clientModule) return;
+        moduleGraph.invalidateModule(clientModule);
+        return [clientModule];
       }
 
       const relativePath = path.relative(docsRoot, context.file);
       if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return;
+
+      const previousPages = pages;
       pages = await scanDocs(docsRoot, docs.supportedLocales);
-      const pagesModule = context.server.moduleGraph.getModuleById(resolvedPagesModuleId);
-      const searchModule = context.server.moduleGraph.getModuleById(resolvedSearchModuleId);
-      for (const module of [pagesModule, searchModule]) {
-        if (module) context.server.moduleGraph.invalidateModule(module);
+
+      // Documents that were removed have no module left to update.
+      const modules = new Set(context.type === 'delete' ? [] : context.modules);
+
+      // Content-only edits are handled by the React Refresh boundary of the document module
+      // itself. Pages module and search index only need to be regenerated when the page
+      // list or its metadata changed.
+      if (documentsChanged(previousPages, pages)) {
+        for (const id of [resolvedPagesModuleId, resolvedSearchModuleId]) {
+          const module = moduleGraph.getModuleById(id);
+          if (module) {
+            moduleGraph.invalidateModule(module);
+            modules.add(module);
+          }
+        }
       }
-      return [
-        ...new Set(
-          [...context.modules, pagesModule, searchModule].filter((module) => module !== undefined),
-        ),
-      ];
+
+      return [...modules];
     },
   };
+}
+
+function documentsChanged(previous: DocumentPage[], next: DocumentPage[]): boolean {
+  if (previous.length !== next.length) return true;
+  return next.some((page, index) => {
+    const before = previous[index];
+    return (
+      before.file !== page.file ||
+      before.path !== page.path ||
+      before.locale !== page.locale ||
+      before.title !== page.title ||
+      !hasSameFrontmatter(before.frontmatter, page.frontmatter)
+    );
+  });
+}
+
+function hasSameFrontmatter(
+  previous: Record<string, unknown>,
+  next: Record<string, unknown>,
+): boolean {
+  return JSON.stringify(previous) === JSON.stringify(next);
 }
 
 async function readPackageJson(file: string): Promise<Record<string, unknown>> {

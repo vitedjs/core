@@ -11,6 +11,11 @@
 ### Changed
 
 - Do not add a favicon when the project does not provide one.
+- Provide Markdown and MDX frontmatter through the generated pages module instead of a `frontmatter` export, so documents can use React Fast Refresh.
+
+### Fixed
+
+- Hot update documentation pages while editing: content edits refresh the page component in place, and frontmatter, added, or removed documents update the sidebar and search index without a full page reload.
 
 ## 0.1.1 - 2026-10-28
 
