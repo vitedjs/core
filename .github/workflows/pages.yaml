@@ -11,11 +11,25 @@ permissions:
 concurrency:
   group: github-pages
   cancel-in-progress: false
+defaults:
+  run:
+    working-directory: core
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          path: core
+      # @vited/cli and @vited/theme-mantine are linked from sibling directories
+      - uses: actions/checkout@v6
+        with:
+          repository: vitedjs/cli
+          path: cli
+      - uses: actions/checkout@v6
+        with:
+          repository: vitedjs/theme-mantine
+          path: theme-mantine
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -23,12 +37,17 @@ jobs:
         with:
           version: 12.16.1
       - uses: actions/configure-pages@v5
+      - run: pnpm install
       - run: pnpm approve-builds @swc/core esbuild
       - run: pnpm install
+        working-directory: cli
+      - run: pnpm install
+        working-directory: theme-mantine
+      - run: pnpm build:packages
       - run: pnpm run docs:build
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: ./docs_dist
+          path: ./core/docs_dist
   deploy:
     environment:
       name: github-pages

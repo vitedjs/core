@@ -46,7 +46,6 @@
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint",
-    "predev": "pnpm build && pnpm --dir ../cli build && pnpm --dir ../theme-mantine build",
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest"
