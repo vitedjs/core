@@ -44,6 +44,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let packageJsonPath: string;
   let favicon: Favicon | undefined;
   let faviconLink: FaviconLink | undefined;
+  let devFaviconLink: FaviconLink | undefined;
   let baseURL = '/';
   let useDefaultHtml = false;
   let packageJSON: Record<string, unknown> = {};
@@ -95,6 +96,9 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
             href: `${basePath === '/' ? '' : basePath}/${favicon.fileName}`,
           }
         : undefined;
+      // Vite prepends the configured base to root-relative URLs while transforming HTML
+      // in development, so the injected link must stay base-less there.
+      devFaviconLink = favicon ? { type: favicon.type, href: `/${favicon.fileName}` } : undefined;
       packageJSON = await readPackageJson(packageJsonPath);
     },
     async buildStart() {
@@ -153,23 +157,24 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     },
     transformIndexHtml: {
       order: 'pre',
-      handler(html) {
+      handler(html, context) {
         const withRoot = /id=["']root["']/.test(html)
           ? html
           : html.replace(/<body([^>]*)>/i, '<body$1><div id="root"></div>');
         const withMetadata = applyHtmlMetadata(withRoot, docs, packageJSON);
-        const faviconResult = replaceFaviconLink(withMetadata, faviconLink);
+        const htmlFaviconLink = context.server ? devFaviconLink : faviconLink;
+        const faviconResult = replaceFaviconLink(withMetadata, htmlFaviconLink);
         return {
           html: faviconResult.html,
           tags: [
-            ...(faviconLink && faviconResult.injectFavicon
+            ...(htmlFaviconLink && faviconResult.injectFavicon
               ? [
                   {
                     tag: 'link' as const,
                     attrs: {
                       rel: 'icon',
-                      type: faviconLink.type,
-                      href: faviconLink.href,
+                      type: htmlFaviconLink.type,
+                      href: htmlFaviconLink.href,
                     },
                     injectTo: 'head-prepend' as const,
                   },
@@ -211,7 +216,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
             return;
           }
 
-          const shellHtml = createDefaultDocumentHtml(faviconLink, docs, packageJSON);
+          const shellHtml = createDefaultDocumentHtml(devFaviconLink, docs, packageJSON);
           void server
             .transformIndexHtml(request.url ?? '/', shellHtml)
             .then((transformedHtml) => {

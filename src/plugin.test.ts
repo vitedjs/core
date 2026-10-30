@@ -176,6 +176,7 @@ describe('vitedPlugin()', () => {
       const server = await createServer({
         configFile: false,
         root,
+        base: '/core/',
         plugins: [vitedPlugin()],
         server: { host: '127.0.0.1', port: 0 },
       });
@@ -189,8 +190,9 @@ describe('vitedPlugin()', () => {
 
         const { statusCode, html } = await getHtml(`http://127.0.0.1:${address.port}/`);
         expect(statusCode).toBe(200);
-        expect(html).toContain('rel="icon" type="image/svg+xml" href="/favicon.svg"');
-        const faviconResponse = await getHtml(`http://127.0.0.1:${address.port}/favicon.svg`);
+        expect(html).toContain('rel="icon" type="image/svg+xml" href="/core/favicon.svg"');
+        expect(html).not.toContain('/core/core/');
+        const faviconResponse = await getHtml(`http://127.0.0.1:${address.port}/core/favicon.svg`);
         expect(faviconResponse.statusCode).toBe(200);
         expect(faviconResponse.html).toBe(projectFavicon);
       } finally {
