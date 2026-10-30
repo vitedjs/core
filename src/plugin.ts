@@ -16,6 +16,12 @@ import {
   readProjectFavicon,
   type Favicon,
 } from './html';
+import {
+  createLocalizedMenu,
+  createLocalizedSite,
+  normalizeBaseURL,
+  resolveLocales,
+} from './routing';
 import { createSearchIndex } from './search-index';
 import {
   clientModuleId,
@@ -96,15 +102,24 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
     async load(id) {
       if (id === resolvedPagesModuleId) {
         pages = await scanDocs(docsRoot, docs.supportedLocales);
-        return createPagesModule(pages);
+        return createPagesModule(pages, createLocalizedSite(pages, docs.supportedLocales, baseURL));
       }
       if (id === resolvedSearchModuleId) {
         pages = await scanDocs(docsRoot, docs.supportedLocales);
-        const searchIndex = await createSearchIndex(pages);
+        const site = createLocalizedSite(pages, docs.supportedLocales, baseURL);
+        const searchIndex = await createSearchIndex(pages, site);
         return `export default ${JSON.stringify(searchIndex)};`;
       }
       if (id === resolvedClientModuleId) {
-        return createClientModule(docs, packageJSON, baseURL);
+        pages = await scanDocs(docsRoot, docs.supportedLocales);
+        const locales = resolveLocales(pages, docs.supportedLocales);
+        const basePath = normalizeBaseURL(baseURL);
+        return createClientModule(docs, packageJSON, {
+          baseURL,
+          basePath: basePath === '/' ? '' : basePath,
+          locales,
+          menu: createLocalizedMenu(docs.menu, locales, baseURL),
+        });
       }
     },
     generateBundle: {

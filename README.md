@@ -47,6 +47,18 @@ Vited compiles `.md` and `.mdx` files into React components with
 `@mdx-js/rollup`. Themes can customize rendered Markdown elements through the
 MDX `components` prop.
 
+Themes render the pages themselves, so Vited resolves URLs before handing data
+to the theme. Every page and route carries a `pathname` that a client router
+matches (`/zh/guide/start/`) and a `url` with the site base URL
+(`/docs/zh/guide/start/`). Page URLs are directory style and end with a slash.
+`routes` lists every page route in every configured locale, including the page
+that renders it and the translation it falls back to, so a theme can switch
+language without building paths. `routeIndex` maps a pathname, with or without
+the trailing slash, to its route, so a page is found for both URL forms. Menu
+entries configured with `path` receive `pathnames` and `urls` per locale the
+same way, and `basePath` is the site base URL without a trailing slash, for
+client routers. Search results carry a `pathname` as well.
+
 While the development server runs, editing a document refreshes the page
 component in place. Frontmatter changes, and added or removed documents, update
 the sidebar and search index without a full page reload.

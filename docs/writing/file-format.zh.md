@@ -26,6 +26,9 @@ docs/
 
 `README.md` 是所在目录的索引页，例如 `docs/guide/README.md` 对应 `/guide`。
 
+页面 URL 采用目录风格，末尾带斜杠，因此上面的页面地址是 `/guide/start/`；
+不带末尾斜杠的地址同样可以访问。
+
 ## 多语言
 
 在 `vited.config.ts` 中设置 `supportedLocales`，然后在扩展名前添加语言后缀来翻译页面：

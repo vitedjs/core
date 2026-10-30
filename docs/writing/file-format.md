@@ -29,6 +29,10 @@ segment: `docs/guide/start.mdx` is available at `/guide/start`.
 `README.md` is the index page of its directory, so `docs/guide/README.md` is
 available at `/guide`.
 
+Page URLs use directory style and end with a slash, so the page above is
+published as `/guide/start/`. The form without the trailing slash resolves to
+the same page.
+
 ## Languages
 
 Set `supportedLocales` in `vited.config.ts`, then add a locale suffix before the

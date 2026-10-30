@@ -6,17 +6,21 @@ import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
 import type { DocumentPage } from './define-config';
+import type { LocalizedSite } from './routing';
 
 export interface SearchDocument {
-  path: string;
+  pathname: string;
   locale: string;
   title: string;
   content: string;
 }
 
-export async function createSearchIndex(pages: DocumentPage[]): Promise<SearchDocument[]> {
+export async function createSearchIndex(
+  pages: DocumentPage[],
+  site: LocalizedSite,
+): Promise<SearchDocument[]> {
   return Promise.all(
-    pages.map(async (page) => {
+    pages.map(async (page, index) => {
       const source = await readFile(page.file, 'utf8');
       const parsed = matter(source);
       const title = typeof parsed.data.title === 'string' ? parsed.data.title : page.title;
@@ -40,7 +44,12 @@ export async function createSearchIndex(pages: DocumentPage[]): Promise<SearchDo
           .trim();
       }
 
-      return { path: page.path, locale: page.locale, title, content };
+      return {
+        pathname: site.pages[index].pathname,
+        locale: page.locale,
+        title,
+        content,
+      };
     }),
   );
 }
