@@ -9,6 +9,8 @@ directory's index page; nested directories become route segments.
 
 For example, `docs/guide/README.md` is available at `/guide`.
 
+See [Writing documents](../writing.md) for page metadata and React components.
+
 ## Languages
 
 Set `supportedLocales` in `vited.config.ts`, then add a locale suffix to each

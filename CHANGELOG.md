@@ -12,7 +12,7 @@
 
 - Do not add a favicon when the project does not provide one.
 - Provide Markdown and MDX frontmatter through the generated pages module instead of a `frontmatter` export, so documents can use React Fast Refresh.
-- Treat only `.page.jsx` and `.page.tsx` components as documentation pages; other `.jsx` and `.tsx` files are no longer pages, so they can be imported as regular components.
+- Only `.md` and `.mdx` files are documentation pages; `.jsx` and `.tsx` files are always treated as components, which pages import from MDX.
 
 ### Fixed
 

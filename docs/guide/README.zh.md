@@ -9,6 +9,8 @@ title: 快速开始
 
 例如，`docs/guide/README.md` 对应 `/guide`。
 
+页面元数据和使用 React 组件请参阅[编写文档](../writing.zh.md)。
+
 ## 多语言
 
 在 `vited.config.ts` 中设置 `supportedLocales`，然后为翻译后的文档添加语言后缀：

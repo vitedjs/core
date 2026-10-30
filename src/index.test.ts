@@ -45,26 +45,18 @@ describe('getPageRoute()', () => {
       route: '/api/overview.pt',
       locale: 'en',
     });
-    expect(getPageRoute('api/client.page.tsx', ['en'])).toEqual({
-      route: '/api/client',
-      locale: 'en',
-    });
-    expect(getPageRoute('api/demo.zh.page.jsx', ['en', 'zh'])).toEqual({
-      route: '/api/demo',
-      locale: 'zh',
-    });
     expect(getPageRoute('api/intro.pt-br.md', ['en', 'pt-BR'])).toEqual({
       route: '/api/intro',
       locale: 'pt-BR',
     });
   });
 
-  it('rejects component files that are not page entries', () => {
+  it('rejects files that are not Markdown documents', () => {
     expect(() => getPageRoute('api/client.tsx', ['en'])).toThrow(
-      'Unsupported documentation file: api/client.tsx',
+      'Unsupported documentation file extension: api/client.tsx',
     );
-    expect(() => getPageRoute('api/client.jsx', ['en'])).toThrow(
-      'Unsupported documentation file: api/client.jsx',
+    expect(() => getPageRoute('api/client.page.jsx', ['en'])).toThrow(
+      'Unsupported documentation file extension: api/client.page.jsx',
     );
   });
 });
@@ -76,19 +68,17 @@ describe('scanDocs()', () => {
       await mkdir(path.join(root, 'guide'));
       await writeFile(path.join(root, 'README.md'), '# Home');
       await writeFile(path.join(root, 'guide', 'start.zh.mdx'), '# 开始');
-      await writeFile(path.join(root, 'guide', 'example.page.tsx'), 'export default () => null');
       await writeFile(path.join(root, 'guide', 'component.tsx'), 'export default () => null');
-      await writeFile(path.join(root, 'guide', 'component.jsx'), 'export default () => null');
+      await writeFile(path.join(root, 'guide', 'component.page.tsx'), 'export default () => null');
       await writeFile(path.join(root, 'ignored.txt'), 'ignored');
 
       const pages = await scanDocs(root, ['en', 'zh']);
 
       expect(pages.map(({ path: route, locale }) => [route, locale])).toEqual([
         ['/', 'en'],
-        ['/guide/example', 'en'],
         ['/guide/start', 'zh'],
       ]);
-      expect(pages.map(({ title }) => title)).toEqual(['Home', 'example', '开始']);
+      expect(pages.map(({ title }) => title)).toEqual(['Home', '开始']);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

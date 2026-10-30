@@ -2,8 +2,6 @@ import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import matter from 'gray-matter';
-
 import type { DocsConfig, DocumentPage } from './define-config';
 
 type OutputBundle = Record<
@@ -196,10 +194,9 @@ export async function emitStaticHtmlPages({
     }
     outputPaths.add(fileName);
 
-    const frontmatter = await readPageFrontmatter(page);
     const pageMetadata = {
-      ...frontmatter,
-      title: typeof frontmatter['title'] === 'string' ? frontmatter['title'] : page.title,
+      ...page.frontmatter,
+      title: typeof page.frontmatter['title'] === 'string' ? page.frontmatter['title'] : page.title,
     };
     const html = applyPageMetadata(htmlShell, docs, packageJSON, pageMetadata);
     if (fileName === 'index.html') {
@@ -242,21 +239,6 @@ export function applyPageMetadata(
     updatedHtml = upsertMetaTag(updatedHtml, 'keywords', keywords);
   }
   return updatedHtml;
-}
-
-export async function readPageFrontmatter(page: DocumentPage): Promise<Record<string, unknown>> {
-  const extension = path.extname(page.file).toLowerCase();
-  if (extension !== '.md' && extension !== '.mdx') return {};
-
-  try {
-    const source = await readFile(page.file, 'utf8');
-    const frontmatter: unknown = matter(source).data;
-    return isRecord(frontmatter) ? frontmatter : {};
-  } catch (error) {
-    throw new Error(`Failed to read frontmatter for documentation page ${page.file}`, {
-      cause: error,
-    });
-  }
 }
 
 export function getPageOutputPath(page: DocumentPage, locales: string[]): string {
@@ -338,8 +320,4 @@ function isFaviconLink(linkTag: string): boolean {
 
 function isMissingFileError(error: unknown): boolean {
   return error instanceof Error && 'code' in error && error.code === 'ENOENT';
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

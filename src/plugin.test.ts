@@ -317,7 +317,6 @@ describe('vitedPlugin()', () => {
     const output = path.join(root, 'output');
     try {
       await mkdir(path.join(docsRoot, 'guide'), { recursive: true });
-      await mkdir(path.join(docsRoot, 'api'), { recursive: true });
       await writeFile(path.join(root, 'index.html'), '<html><body></body></html>');
       await writeFile(
         path.join(root, 'package.json'),
@@ -347,11 +346,6 @@ describe('vitedPlugin()', () => {
         path.join(docsRoot, 'guide', 'start.zh.mdx'),
         '---\ntitle: 开始\ndescription: Guide page description\nkeywords: [guide, start]\n---\n# Getting started\n\nUnique searchable phrase.\n\n[Previous](../no-frontmatter.md#heading)\n\n```js\nconst mdxValue = "highlighted mdx";\n```',
       );
-      await writeFile(
-        path.join(docsRoot, 'api', 'client.page.tsx'),
-        'export default function ClientPage() { return null; }',
-      );
-
       await build({
         configFile: false,
         root,
@@ -380,10 +374,6 @@ describe('vitedPlugin()', () => {
         path.join(output, 'guide', 'no-frontmatter', 'index.html'),
         'utf8',
       );
-      const componentPageHtml = await readFile(
-        path.join(output, 'api', 'client', 'index.html'),
-        'utf8',
-      );
       const scripts = await collectJavaScript(output);
       const bundle = scripts.join('\n');
 
@@ -400,10 +390,6 @@ describe('vitedPlugin()', () => {
       expect(localizedPageHtml).not.toContain('<h1');
       expect(localizedPageHtml).not.toContain('Unique searchable phrase.');
       expect(noFrontmatterPageHtml).toContain('<title>Page title from heading</title>');
-      expect(componentPageHtml).toContain(
-        '<meta name="description" content="Global site description" />',
-      );
-      expect(componentPageHtml).toContain('<meta name="keywords" content="global, site" />');
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');
       expect(bundle).toContain('Getting started');

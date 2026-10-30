@@ -34,14 +34,14 @@ the project's own `dist` directory. A configured Vite `build.outDir` takes
 precedence.
 
 Vited reads documents from the `docs` directory under the Vite project root.
-Vited discovers `.md` and `.mdx` files, plus `.jsx` and `.tsx` page components
-named `*.page.jsx` or `*.page.tsx`; other components are not pages. Directory
+Vited discovers `.md` and `.mdx` files recursively; other files are not pages,
+and React components (`.jsx`, `.tsx`) are imported from MDX documents. Directory
 names form route segments and `README.md` is the directory index. A supported
-locale suffix before the extension selects the locale, for example `guide.zh.md`
-or `guide.zh.page.tsx`. The first configured locale uses the unprefixed route;
-other locales use a `/<locale>/` prefix, so `README.zh.md` is available at `/zh/`.
-Markdown frontmatter is available as each page's `frontmatter`; its `title`
-becomes the page title.
+locale suffix before the extension selects the locale, for example `guide.zh.md`.
+The first configured locale uses the unprefixed route; other locales use a
+`/<locale>/` prefix, so `README.zh.md` is available at `/zh/`. Markdown
+frontmatter is available as each page's `frontmatter`; its `title` becomes the
+page title.
 
 Vited compiles `.md` and `.mdx` files into React components with
 `@mdx-js/rollup`. Themes can customize rendered Markdown elements through the
