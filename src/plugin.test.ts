@@ -62,11 +62,19 @@ describe('vitedPlugin()', () => {
       expect(html).toContain('<meta name="description" content="Configured &amp; custom" />');
       expect(html).toContain('<meta name="keywords" content="configured, custom" />');
       expect(html).not.toContain('Package description');
-      expect(html).toContain('rel="icon" type="image/svg+xml"');
-      expect(html).toContain(`href="data:image/svg+xml,${encodeURIComponent(projectFavicon)}"`);
+      expect(html).toContain('rel="icon" type="image/svg+xml" href="/favicon.svg"');
+      expect(await readFile(path.join(output, 'favicon.svg'), 'utf8')).toBe(projectFavicon);
       expect(html).toContain('id="root"');
       expect(html).toContain('type="module"');
       expect(html).toContain('rel="stylesheet"');
+      const assetFiles = await readdir(path.join(output, 'assets'));
+      const clientFiles = assetFiles.filter((file) => file.endsWith('.js'));
+      const clientSources = await Promise.all(
+        clientFiles.map((file) => readFile(path.join(output, 'assets', file), 'utf8')),
+      );
+      const clientBundle = clientSources.join('\n');
+      expect(clientBundle).toContain('favicon:');
+      expect(clientBundle).toContain('/favicon.svg');
       await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
         code: 'ENOENT',
       });
@@ -115,7 +123,7 @@ describe('vitedPlugin()', () => {
       expect(html).toContain('<meta name="keywords" content="static, page" />');
       expect(html).not.toContain('<h1>Body is client-rendered</h1>');
       expect(html).not.toContain('rel="icon"');
-      expect(html).not.toContain('data:image/svg+xml,');
+      expect(html).not.toContain('favicon.svg');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -144,12 +152,47 @@ describe('vitedPlugin()', () => {
         expect(statusCode).toBe(200);
         expect(html).toContain('<title>vited-test-site</title>');
         expect(html).not.toContain('rel="icon"');
-        expect(html).not.toContain('data:image/svg+xml,');
+        expect(html).not.toContain('favicon.svg');
         expect(html).toContain('id="root"');
         expect(html).toContain('/@vite/client');
         await expect(readFile(path.join(root, 'index.html'))).rejects.toMatchObject({
           code: 'ENOENT',
         });
+      } finally {
+        await server.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('serves the project favicon in development', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vited-dev-favicon-'));
+    const projectFavicon = '<svg xmlns="http://www.w3.org/2000/svg"><title>dev icon</title></svg>';
+    try {
+      await mkdir(path.join(root, 'docs'), { recursive: true });
+      await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vited-test-site' }));
+      await writeFile(path.join(root, 'docs', 'favicon.svg'), projectFavicon);
+      const server = await createServer({
+        configFile: false,
+        root,
+        plugins: [vitedPlugin()],
+        server: { host: '127.0.0.1', port: 0 },
+      });
+
+      try {
+        await server.listen();
+        const address = server.httpServer?.address();
+        if (!address || typeof address === 'string') {
+          throw new Error('Vite dev server did not expose a TCP address');
+        }
+
+        const { statusCode, html } = await getHtml(`http://127.0.0.1:${address.port}/`);
+        expect(statusCode).toBe(200);
+        expect(html).toContain('rel="icon" type="image/svg+xml" href="/favicon.svg"');
+        const faviconResponse = await getHtml(`http://127.0.0.1:${address.port}/favicon.svg`);
+        expect(faviconResponse.statusCode).toBe(200);
+        expect(faviconResponse.html).toBe(projectFavicon);
       } finally {
         await server.close();
       }
@@ -305,7 +348,7 @@ describe('vitedPlugin()', () => {
       expect(html).toContain('<link rel="icon" href="/custom.ico">');
       expect(html).toContain('<meta name="description" content="Package description" />');
       expect(html).toContain('<meta name="keywords" content="package, metadata" />');
-      expect(html).not.toContain('data:image/svg+xml,');
+      expect(html).not.toContain('favicon.svg');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -377,7 +420,8 @@ describe('vitedPlugin()', () => {
       const scripts = await collectJavaScript(output);
       const bundle = scripts.join('\n');
 
-      expect(html).toContain(`href="data:image/png;base64,${projectFavicon.toString('base64')}"`);
+      expect(html).toContain('href="/docs-site/favicon.png"');
+      expect(await readFile(path.join(output, 'favicon.png'))).toEqual(projectFavicon);
       expect(html).toContain('<title>Home page SEO</title>');
       expect(html).toContain('<meta name="description" content="Home page description" />');
       expect(html).toContain('<meta name="keywords" content="home, docs" />');

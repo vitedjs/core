@@ -15,6 +15,7 @@ import {
   replaceFaviconLink,
   readProjectFavicon,
   type Favicon,
+  type FaviconLink,
 } from './html';
 import {
   createLocalizedMenu,
@@ -42,6 +43,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
   let docsRoot: string;
   let packageJsonPath: string;
   let favicon: Favicon | undefined;
+  let faviconLink: FaviconLink | undefined;
   let baseURL = '/';
   let useDefaultHtml = false;
   let packageJSON: Record<string, unknown> = {};
@@ -86,6 +88,13 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       packageJsonPath = path.join(resolvedConfig.root, 'package.json');
       baseURL = resolvedConfig.base;
       favicon = await readProjectFavicon(docsRoot);
+      const basePath = normalizeBaseURL(baseURL);
+      faviconLink = favicon
+        ? {
+            type: favicon.type,
+            href: `${basePath === '/' ? '' : basePath}/${favicon.fileName}`,
+          }
+        : undefined;
       packageJSON = await readPackageJson(packageJsonPath);
     },
     async buildStart() {
@@ -119,12 +128,16 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           basePath: basePath === '/' ? '' : basePath,
           locales,
           menu: createLocalizedMenu(docs.menu, locales, baseURL),
+          favicon: faviconLink,
         });
       }
     },
     generateBundle: {
       order: 'post',
       async handler(_outputOptions, bundle) {
+        if (favicon) {
+          this.emitFile({ type: 'asset', fileName: favicon.fileName, source: favicon.source });
+        }
         await emitStaticHtmlPages({
           bundle,
           clientEntry,
@@ -133,7 +146,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           pages,
           docs,
           packageJSON,
-          favicon,
+          favicon: faviconLink,
           emitFile: (fileName, source) => this.emitFile({ type: 'asset', fileName, source }),
         });
       },
@@ -145,18 +158,18 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           ? html
           : html.replace(/<body([^>]*)>/i, '<body$1><div id="root"></div>');
         const withMetadata = applyHtmlMetadata(withRoot, docs, packageJSON);
-        const faviconResult = replaceFaviconLink(withMetadata, favicon);
+        const faviconResult = replaceFaviconLink(withMetadata, faviconLink);
         return {
           html: faviconResult.html,
           tags: [
-            ...(favicon && faviconResult.injectFavicon
+            ...(faviconLink && faviconResult.injectFavicon
               ? [
                   {
                     tag: 'link' as const,
                     attrs: {
                       rel: 'icon',
-                      type: favicon.type,
-                      href: favicon.href,
+                      type: faviconLink.type,
+                      href: faviconLink.href,
                     },
                     injectTo: 'head-prepend' as const,
                   },
@@ -178,6 +191,19 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
       server.watcher.add(docsRoot);
       server.watcher.add(packageJsonPath);
 
+      if (faviconLink && favicon) {
+        const faviconFile = favicon;
+        const faviconPath = new URL(faviconLink.href, 'http://localhost').pathname;
+        server.middlewares.use((request, response, next) => {
+          if ((request.url ?? '').split('?')[0] !== faviconPath) {
+            next();
+            return;
+          }
+          response.setHeader('Content-Type', faviconFile.type);
+          response.end(faviconFile.source);
+        });
+      }
+
       if (!existsSync(path.join(server.config.root, 'index.html'))) {
         server.middlewares.use((request, response, next) => {
           if (request.method !== 'GET' || !request.headers.accept?.includes('text/html')) {
@@ -185,7 +211,7 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
             return;
           }
 
-          const shellHtml = createDefaultDocumentHtml(favicon, docs, packageJSON);
+          const shellHtml = createDefaultDocumentHtml(faviconLink, docs, packageJSON);
           void server
             .transformIndexHtml(request.url ?? '/', shellHtml)
             .then((transformedHtml) => {

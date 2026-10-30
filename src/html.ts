@@ -17,6 +17,13 @@ type OutputBundle = Record<
 
 export interface Favicon {
   type: 'image/svg+xml' | 'image/png';
+  /** Name of the favicon file, emitted next to the generated pages. */
+  fileName: string;
+  source: Uint8Array;
+}
+
+export interface FaviconLink {
+  type: Favicon['type'];
   href: string;
 }
 
@@ -27,14 +34,7 @@ export async function readProjectFavicon(docsRoot: string): Promise<Favicon | un
   ] as const) {
     const file = path.join(docsRoot, fileName);
     try {
-      const contents = await readFile(file);
-      return {
-        type,
-        href:
-          type === 'image/svg+xml'
-            ? `data:${type},${encodeURIComponent(contents.toString('utf8'))}`
-            : `data:${type};base64,${contents.toString('base64')}`,
-      };
+      return { type, fileName, source: await readFile(file) };
     } catch (error) {
       if (isMissingFileError(error)) continue;
       throw new Error(`Failed to read documentation favicon at ${file}`, { cause: error });
@@ -43,9 +43,9 @@ export async function readProjectFavicon(docsRoot: string): Promise<Favicon | un
   return;
 }
 
-export function createDefaultHtml(favicon?: Favicon): string {
+export function createDefaultHtml(favicon?: FaviconLink): string {
   const faviconLink = favicon
-    ? `    <link rel="icon" type="${favicon.type}" href="${favicon.href}" />\n`
+    ? `    <link rel="icon" type="${favicon.type}" href="${escapeHtmlAttribute(favicon.href)}" />\n`
     : '';
   return `<!doctype html>
 <html lang="en">
@@ -62,7 +62,7 @@ ${faviconLink}    <title>Vited</title>
 }
 
 export function createDefaultDocumentHtml(
-  favicon: Favicon | undefined,
+  favicon: FaviconLink | undefined,
   docs: DocsConfig,
   packageJSON: Record<string, unknown>,
 ): string {
@@ -73,7 +73,7 @@ export function createDefaultDocumentHtml(
 
 export function replaceFaviconLink(
   html: string,
-  favicon: Favicon | undefined,
+  favicon: FaviconLink | undefined,
 ): { html: string; injectFavicon: boolean } {
   if (!favicon) return { html, injectFavicon: false };
   let hasFavicon = false;
@@ -138,7 +138,7 @@ export async function emitStaticHtmlPages({
   pages: DocumentPage[];
   docs: DocsConfig;
   packageJSON: Record<string, unknown>;
-  favicon: Favicon | undefined;
+  favicon: FaviconLink | undefined;
   emitFile: (fileName: string, source: string) => void;
 }): Promise<void> {
   if (!useDefaultHtml && pages.length === 0) return;

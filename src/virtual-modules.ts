@@ -1,4 +1,5 @@
 import type { DocsConfig, DocumentPage } from './define-config';
+import type { FaviconLink } from './html';
 import type { LocalizedMenuEntry, LocalizedSite } from './routing';
 
 export const pagesModuleId = 'virtual:vited/pages';
@@ -36,12 +37,13 @@ export interface ClientModuleData {
   basePath: string;
   locales: string[];
   menu?: LocalizedMenuEntry[];
+  favicon?: FaviconLink;
 }
 
 export function createClientModule(
   docs: DocsConfig,
   packageJSON: Record<string, unknown>,
-  { baseURL, basePath, locales, menu }: ClientModuleData,
+  { baseURL, basePath, locales, menu, favicon }: ClientModuleData,
 ): string {
   const theme = docs.theme ?? '@vited/theme-mantine';
   return `
@@ -60,6 +62,7 @@ export function createClientModule(
     root.render(React.createElement(Theme, {
       title: ${JSON.stringify(docs.title ?? '')},
       description: ${JSON.stringify(docs.description ?? '')},
+      favicon: ${JSON.stringify(favicon?.href ?? '')},
       supportedLocales: ${JSON.stringify(locales)},
       menu: ${JSON.stringify(menu)},
       packageJSON: ${JSON.stringify(packageJSON)},
