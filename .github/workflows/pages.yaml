@@ -38,12 +38,16 @@ jobs:
           version: 12.16.1
       - uses: actions/configure-pages@v5
       - run: pnpm install
-      - run: pnpm approve-builds @swc/core esbuild
-      - run: pnpm install
+        working-directory: cli
+      - run: pnpm build
         working-directory: cli
       - run: pnpm install
         working-directory: theme-mantine
-      - run: pnpm build:packages
+      - run: pnpm build
+        working-directory: theme-mantine
+      - run: pnpm install
+      - run: pnpm approve-builds @swc/core esbuild
+      - run: pnpm build
       - run: pnpm run docs:build
       - uses: actions/upload-pages-artifact@v4
         with:
