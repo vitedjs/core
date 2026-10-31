@@ -8,5 +8,6 @@
     "skipLibCheck": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["docs_dist"]
 }
