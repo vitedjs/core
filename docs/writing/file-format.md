@@ -33,6 +33,22 @@ Page URLs use directory style and end with a slash, so the page above is
 published as `/guide/start/`. The form without the trailing slash resolves to
 the same page.
 
+## Heading anchors
+
+Every heading gets an `id` derived from its text, and an anchor link that points
+to that heading. Headings can be linked directly with a fragment, such as
+`/guide/start/#getting-started` or `./start.md#getting-started` from another
+document:
+
+```md
+## Getting started
+
+See [Getting started](./start.md#getting-started).
+```
+
+Repeated heading text gets a numeric suffix (`#getting-started-1`), so every
+anchor stays unique.
+
 ## Languages
 
 Set `supportedLocales` in `vited.config.ts`, then add a locale suffix before the

@@ -29,6 +29,20 @@ docs/
 页面 URL 采用目录风格，末尾带斜杠，因此上面的页面地址是 `/guide/start/`；
 不带末尾斜杠的地址同样可以访问。
 
+## 标题锚点
+
+每个标题都会根据标题文本生成 `id`，并附带一个指向该标题的锚点链接。可以直接用片段定位到
+标题，例如 `/guide/start/#getting-started`，或在其他文档中写
+`./start.md#getting-started`：
+
+```md
+## Getting started
+
+See [Getting started](./start.md#getting-started).
+```
+
+标题文本重复时会追加数字后缀（`#getting-started-1`），保证每个锚点唯一。
+
 ## 多语言
 
 在 `vited.config.ts` 中设置 `supportedLocales`，然后在扩展名前添加语言后缀来翻译页面：

@@ -439,6 +439,10 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');
       expect(bundle).toContain('Getting started');
+      expect(bundle).toMatch(/id:\s*[`"]documentation-home[`"]/);
+      expect(bundle).toMatch(/id:\s*[`"]getting-started[`"]/);
+      expect(bundle).toContain('vited-heading-anchor');
+      expect(bundle).toMatch(/href:\s*[`"]#getting-started[`"]/);
       expect(bundle).toContain('开始');
       expect(bundle).toContain('Unique searchable phrase.');
       expect(bundle).toMatch(/baseURL.{0,32}\/docs-site\//s);

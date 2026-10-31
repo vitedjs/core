@@ -1,5 +1,7 @@
 import mdx from '@mdx-js/rollup';
 import { markdownPathToUrlPath } from 'md-url-path';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeSlug from 'rehype-slug';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkLinkRewrite from 'remark-link-rewrite';
 import type { Plugin } from 'vite';
@@ -22,6 +24,21 @@ export function createMdxPlugin(): Plugin {
           remarkLinkRewrite,
           {
             replacer: rewriteDocumentLink,
+          },
+        ],
+      ],
+      rehypePlugins: [
+        rehypeSlug,
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'append',
+            properties: {
+              className: ['vited-heading-anchor'],
+              ariaHidden: true,
+              tabIndex: -1,
+            },
+            content: { type: 'text', value: '#' },
           },
         ],
       ],
