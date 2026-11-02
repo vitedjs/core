@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.4.3 - 2026-11-02
+
+### Added
+
+- Include an `AGENTS.md` setup and configuration guide in the published package.
 
 ## 0.4.2 - 2026-11-02
 

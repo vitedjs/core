@@ -87,6 +87,13 @@ Vited uses its built-in HTML shell when the project does not include an
 `index.html`; if one exists, Vited uses that file. The built-in shell provides a
 `<body>` element and a `#root` mount point for the selected React theme.
 
+## AI agents
+
+The published package includes [`AGENTS.md`](./AGENTS.md), a concise setup and
+configuration guide for AI agents working in projects that use `@vited/core`.
+After installing the package, agents can read it at
+`node_modules/@vited/core/AGENTS.md`.
+
 ## Development
 
 ```bash
