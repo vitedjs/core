@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.2 - 2026-11-02
+
 ### Added
 
 - Generate heading anchors for Markdown and MDX pages: every heading gets an `id` derived from its text and a link to that heading, so `#heading` fragments can be shared and followed.
