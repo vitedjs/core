@@ -3,6 +3,7 @@ import { markdownPathToUrlPath } from 'md-url-path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeSlug from 'rehype-slug';
 import remarkFrontmatter from 'remark-frontmatter';
+import remarkGfm from 'remark-gfm';
 import remarkLinkRewrite from 'remark-link-rewrite';
 import type { Plugin } from 'vite';
 
@@ -20,6 +21,7 @@ export function createMdxPlugin(): Plugin {
       include: /\.mdx?$/i,
       remarkPlugins: [
         remarkFrontmatter,
+        remarkGfm,
         [
           remarkLinkRewrite,
           {
