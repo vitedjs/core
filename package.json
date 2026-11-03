@@ -59,6 +59,7 @@
     "md-url-path": "^1.0.1",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-mdx-code-props": "^3.0.1",
+    "rehype-mdx-code-src": "^0.1.0",
     "rehype-slug": "^6.0.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
