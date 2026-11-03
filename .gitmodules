@@ -1,3 +1,3 @@
 [submodule "sample"]
-	path = sample
+	path = docs/sample
 	url = git@github.com:vitedjs/sample.git
