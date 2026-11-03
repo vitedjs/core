@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4 - 2026-11-03
+
+### Fixed
+
+- Parse GitHub Flavored Markdown tables in Markdown and MDX pages.
+
 ## 0.4.3 - 2026-11-02
 
 ### Added
