@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.5 - 2026-11-03
+
+### Added
+
+- Support static metadata properties on fenced code blocks, such as `filename`.
+- Load fenced code block contents from files referenced by `src`, relative to the Markdown or MDX document.
+- Add sample documentation demonstrating code block metadata and source files.
+
 ## 0.4.4 - 2026-11-03
 
 ### Fixed
