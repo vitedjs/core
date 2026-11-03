@@ -362,6 +362,7 @@ describe('vitedPlugin()', () => {
     const output = path.join(root, 'output');
     try {
       await mkdir(path.join(docsRoot, 'guide'), { recursive: true });
+      await mkdir(path.join(docsRoot, 'src'), { recursive: true });
       await writeFile(path.join(root, 'index.html'), '<html><body></body></html>');
       await writeFile(
         path.join(root, 'package.json'),
@@ -380,6 +381,14 @@ describe('vitedPlugin()', () => {
       await writeFile(
         path.join(docsRoot, 'README.md'),
         '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n[Installation](./installation.md) [Home](./README.md) [Nested home](./foo/bar/README.md) [MDX guide](./guide/start.mdx) [External](https://example.com/guide.md)\n\n| Feature | Status |\n| --- | --- |\n| Markdown tables | Rendered |\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
+      );
+      await writeFile(
+        path.join(docsRoot, 'code.md'),
+        '# Code example\n\n```tsx filename="app.tsx" src="./src/app.tsx"\n\n```',
+      );
+      await writeFile(
+        path.join(docsRoot, 'src', 'app.tsx'),
+        'export function App() { return <main>Loaded from source file</main>; }',
       );
       await writeFile(
         path.join(docsRoot, 'guide', 'no-frontmatter.md'),
@@ -438,6 +447,8 @@ describe('vitedPlugin()', () => {
       expect(noFrontmatterPageHtml).toContain('<title>Page title from heading</title>');
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');
+      expect(bundle).toContain('Loaded from source file');
+      expect(bundle).toMatch(/filename:[`"]app\.tsx[`"]/);
       expect(bundle).toContain('Getting started');
       expect(bundle).toMatch(/id:\s*[`"]documentation-home[`"]/);
       expect(bundle).toMatch(/id:\s*[`"]getting-started[`"]/);
