@@ -83,6 +83,16 @@ order: 10
 ---
 ```
 
+在 frontmatter 中设置 `badge`，可在自动生成的侧边栏标题右侧显示徽标。支持
+`new`（绿色）和 `deprecated`（橙色）；其他值会被忽略。
+
+```md
+---
+title: 旧版 API
+badge: deprecated
+---
+```
+
 ## Vite 配置项
 
 Vited 支持 Vite 的标准配置。例如，在部署到路径前缀下时，可以设置

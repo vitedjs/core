@@ -86,6 +86,17 @@ order: 10
 ---
 ```
 
+Use the `badge` frontmatter field to show a colored badge beside a page title in
+the automatically generated sidebar. Supported values are `new` (green) and
+`deprecated` (orange); other values are ignored.
+
+```md
+---
+title: Legacy API
+badge: deprecated
+---
+```
+
 ## Vite options
 
 Vited supports Vite's normal configuration options. For example, set [`base`
