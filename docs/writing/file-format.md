@@ -33,6 +33,13 @@ Page URLs use directory style and end with a slash, so the page above is
 published as `/guide/start/`. The form without the trailing slash resolves to
 the same page.
 
+## Links
+
+Links to documents are rewritten into page URLs. A link to `./start.md` or
+`./start.mdx` becomes `./start`, a link to `README.md` becomes the index URL of
+its directory, and locale suffixes are dropped so `./start.zh.md` keeps pointing
+at the translation under the current page's locale prefix.
+
 ## Heading anchors
 
 Every heading gets an `id` derived from its text, and an anchor link that points

@@ -380,7 +380,7 @@ describe('vitedPlugin()', () => {
       );
       await writeFile(
         path.join(docsRoot, 'README.md'),
-        '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n[Installation](./installation.md) [Home](./README.md) [Nested home](./foo/bar/README.md) [MDX guide](./guide/start.mdx) [External](https://example.com/guide.md)\n\n| Feature | Status |\n| --- | --- |\n| Markdown tables | Rendered |\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
+        '---\ntitle: Home page SEO\ndescription: Home page description\nkeywords:\n  - home\n  - docs\n---\n# Documentation home\n\n[Installation](./installation.md) [Home](./README.md) [Nested home](./foo/bar/README.md) [MDX guide](./guide/start.mdx) [Localized guide](./guide/start.zh.mdx#getting-started) [External](https://example.com/guide.md)\n\n| Feature | Status |\n| --- | --- |\n| Markdown tables | Rendered |\n\n```c#\nconst markdownValue = "highlighted markdown";\n```',
       );
       await writeFile(
         path.join(docsRoot, 'code.md'),
@@ -468,15 +468,17 @@ describe('vitedPlugin()', () => {
       expect(bundle).toContain('thead');
       expect(bundle).toContain('tbody');
       expect(bundle).toContain('mdxValue');
-      expect(bundle).toContain('href:`./installation/`');
-      expect(bundle).toContain('href:`./guide/start/`');
+      expect(bundle).toContain('href:`./installation`');
+      expect(bundle).toContain('href:`./guide/start`');
+      expect(bundle).toContain('href:`./guide/start#getting-started`');
       expect(bundle).not.toContain('guide/start.mdx');
+      expect(bundle).not.toContain('guide/start.zh');
       expect(bundle).not.toContain('./installation.md');
       expect(bundle).toContain('href:`./`');
       expect(bundle).not.toContain('./README.md');
       expect(bundle).toContain('href:`./foo/bar/`');
       expect(bundle).not.toContain('./foo/bar/README.md');
-      expect(bundle).toContain('../no-frontmatter/#heading');
+      expect(bundle).toContain('../no-frontmatter#heading');
       expect(bundle).toContain('https://example.com/guide.md');
       expect(bundle).not.toContain('dangerouslySetInnerHTML');
       expect(bundle).not.toContain('<h1>Documentation home</h1>');
