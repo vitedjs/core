@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-11-15
+
+### Changed
+
+- Upgrade `md-url-path` to 2.0.0. Links to MDX documents and to localized documents such as `guide.zh-CN.mdx` are rewritten to their page URLs instead of leaving the extension or locale suffix in the URL.
+- Only links to README documents keep a trailing slash. Other links stay extensionless without one, so relative links resolve correctly.
+
 ## 0.4.5 - 2026-11-03
 
 ### Added
