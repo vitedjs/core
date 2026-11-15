@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 - 2026-11-15
+
+### Added
+
+- Generate `sitemap.xml` for the built site when `docs.siteURL` or the `SITE_URL` environment variable is set.
+
 ## 0.5.0 - 2026-11-15
 
 ### Changed
