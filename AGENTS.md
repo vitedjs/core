@@ -87,6 +87,8 @@ For localization, add the locale before the extension, such as
 unprefixed routes and the other locale uses `/zh/` routes.
 
 Frontmatter supports `title`, `description`, and `keywords` for page metadata.
+The document `<title>` is formatted as `<page title> – <site title>`, and themes
+keep it in sync during client-side navigation.
 Use `badge: new` or `badge: deprecated` to show a green or orange badge beside
 the page title in the generated sidebar. Use numeric `order` to position
 generated sidebar entries. Place

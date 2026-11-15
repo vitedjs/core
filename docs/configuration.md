@@ -72,6 +72,19 @@ An entry can use these properties:
 | `flag`     | Optional marker: `experimental`, `new`, or `deprecated`.                       |
 | `children` | Nested menu entries.                                                           |
 
+## Page title
+
+Every page is titled `<page title> – <site title>` in the browser tab. The page
+title comes from the first level-one heading, or from the `title` frontmatter
+when present; the site title comes from `docs.title`. Themes update the tab
+title when readers navigate between pages.
+
+```md
+---
+title: Installation
+---
+```
+
 ## Document ordering
 
 When the sidebar is generated from documentation pages, set a numeric `order`

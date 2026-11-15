@@ -26,8 +26,10 @@ when provided, and otherwise use the matching fields from `package.json`.
 During a production build, Vited emits an HTML shell for each documentation
 page (`guide/start` becomes `guide/start/index.html`). Page frontmatter
 `title`, `description`, and `keywords` override the corresponding HTML head
-values. The page body remains client-rendered; the generated HTML provides the
-page-specific head for crawlers.
+values. The page title is written as `<page title> – <site title>`, and themes
+update the document title when readers navigate between pages. The page body
+remains client-rendered; the generated HTML provides the page-specific head for
+crawlers.
 
 Production builds are written to `docs_dist` by default to avoid conflicts with
 the project's own `dist` directory. A configured Vite `build.outDir` takes

@@ -229,7 +229,10 @@ export function applyPageMetadata(
   }
 
   if (typeof frontmatter['title'] === 'string') {
-    updatedHtml = upsertTitleTag(updatedHtml, frontmatter['title']);
+    updatedHtml = upsertTitleTag(
+      updatedHtml,
+      formatDocumentTitle(frontmatter['title'], resolveSiteTitle(docs, packageJSON)),
+    );
   }
   if (typeof frontmatter['description'] === 'string') {
     updatedHtml = upsertMetaTag(updatedHtml, 'description', frontmatter['description']);
@@ -253,15 +256,25 @@ export function getPageOutputPath(page: DocumentPage, locales: string[]): string
   return path.posix.join(...segments, 'index.html');
 }
 
+/** Site title, falling back to the package name like the generated HTML shell. */
+function resolveSiteTitle(docs: DocsConfig, packageJSON: Record<string, unknown>): string {
+  const packageName = typeof packageJSON['name'] === 'string' ? packageJSON['name'] : undefined;
+  return docs.title ?? packageName ?? 'Vited documentation';
+}
+
+/** Formats a document title as `<page title> – <site title>`. */
+function formatDocumentTitle(pageTitle: string, siteTitle: string): string {
+  if (!pageTitle) return siteTitle;
+  if (!siteTitle || pageTitle === siteTitle) return pageTitle;
+  return `${pageTitle} – ${siteTitle}`;
+}
+
 function applyDefaultTitle(
   html: string,
   docs: DocsConfig,
   packageJSON: Record<string, unknown>,
 ): string {
-  const title =
-    docs.title ??
-    (typeof packageJSON['name'] === 'string' ? packageJSON['name'] : 'Vited documentation');
-  return upsertTitleTag(html, title);
+  return upsertTitleTag(html, resolveSiteTitle(docs, packageJSON));
 }
 
 function normalizeKeywords(value: unknown): string | undefined {

@@ -70,6 +70,18 @@ docs: {
 | `flag`     | 可选标记：`experimental`、`new` 或 `deprecated`。      |
 | `children` | 嵌套菜单项。                                           |
 
+## 页面标题
+
+每个页面在浏览器标签页中显示为“页面标题 – 站点标题”。页面标题取自第一个一级
+标题，设置 frontmatter 中的 `title` 时以它为准；站点标题取自 `docs.title`。
+读者在页面之间跳转时，主题会同步更新标签页标题。
+
+```md
+---
+title: Installation
+---
+```
+
 ## 文档排序
 
 侧边栏根据文档页面自动生成时，可以在 Markdown 或 MDX frontmatter 中设置数字

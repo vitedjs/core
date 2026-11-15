@@ -118,7 +118,7 @@ describe('vitedPlugin()', () => {
       });
 
       const html = await readFile(path.join(output, 'index.html'), 'utf8');
-      expect(html).toContain('<title>Static page title</title>');
+      expect(html).toContain('<title>Static page title – vited-test-site</title>');
       expect(html).toContain('<meta name="description" content="Static page description" />');
       expect(html).toContain('<meta name="keywords" content="static, page" />');
       expect(html).not.toContain('<h1>Body is client-rendered</h1>');
@@ -433,18 +433,20 @@ describe('vitedPlugin()', () => {
 
       expect(html).toContain('href="/docs-site/favicon.png"');
       expect(await readFile(path.join(output, 'favicon.png'))).toEqual(projectFavicon);
-      expect(html).toContain('<title>Home page SEO</title>');
+      expect(html).toContain('<title>Home page SEO – vited-test-site</title>');
       expect(html).toContain('<meta name="description" content="Home page description" />');
       expect(html).toContain('<meta name="keywords" content="home, docs" />');
       expect(html).toContain('id="root"');
-      expect(localizedPageHtml).toContain('<title>开始</title>');
+      expect(localizedPageHtml).toContain('<title>开始 – vited-test-site</title>');
       expect(localizedPageHtml).toContain(
         '<meta name="description" content="Guide page description" />',
       );
       expect(localizedPageHtml).toContain('<meta name="keywords" content="guide, start" />');
       expect(localizedPageHtml).not.toContain('<h1');
       expect(localizedPageHtml).not.toContain('Unique searchable phrase.');
-      expect(noFrontmatterPageHtml).toContain('<title>Page title from heading</title>');
+      expect(noFrontmatterPageHtml).toContain(
+        '<title>Page title from heading – vited-test-site</title>',
+      );
       expect(bundle).toContain('/guide/start');
       expect(bundle).toContain('Documentation home');
       expect(bundle).toContain('Loaded from source file');
