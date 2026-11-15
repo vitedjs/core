@@ -21,6 +21,7 @@ export default defineConfig({
     description: 'Project documentation',
     keywords: ['project', 'documentation'],
     supportedLocales: ['en', 'zh'],
+    siteURL: 'https://example.com/docs',
     theme: '@vited/theme-mantine',
   },
 });
@@ -32,14 +33,15 @@ export default defineConfig({
 
 ## Vited 配置项
 
-| 配置项             | 说明                                                                                                                     |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `title`            | 站点标题。默认使用 `package.json` 中的 `name`；如果没有包名，则使用 `Vited documentation`。                              |
-| `description`      | HTML 描述元数据。默认使用 `package.json` 中的 `description`。                                                            |
-| `keywords`         | HTML 关键词字符串数组。默认使用 `package.json` 中的 `keywords`。                                                         |
-| `supportedLocales` | 要从文件名后缀中识别的语言代码，例如 `guide.zh.md`。第一个语言代码为默认语言，使用无前缀路由；省略时会根据文档推断语言。 |
-| `theme`            | 用于渲染站点的主题包。默认为 `@vited/theme-mantine`。                                                                    |
-| `menu`             | 侧边栏菜单项。省略时会根据文档页面自动生成菜单。                                                                         |
+| 配置项             | 说明                                                                                                                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`            | 站点标题。默认使用 `package.json` 中的 `name`；如果没有包名，则使用 `Vited documentation`。                                                                                        |
+| `description`      | HTML 描述元数据。默认使用 `package.json` 中的 `description`。                                                                                                                      |
+| `keywords`         | HTML 关键词字符串数组。默认使用 `package.json` 中的 `keywords`。                                                                                                                   |
+| `supportedLocales` | 要从文件名后缀中识别的语言代码，例如 `guide.zh.md`。第一个语言代码为默认语言，使用无前缀路由；省略时会根据文档推断语言。                                                           |
+| `siteURL`          | 部署后的站点公开网址（包含 `base` 路径），例如 `https://example.com/docs/`。`sitemap.xml` 中的绝对页面网址由它拼接。未设置时回退到 `SITE_URL` 环境变量；都没有时不会生成 sitemap。 |
+| `theme`            | 用于渲染站点的主题包。默认为 `@vited/theme-mantine`。                                                                                                                              |
+| `menu`             | 侧边栏菜单项。省略时会根据文档页面自动生成菜单。                                                                                                                                   |
 
 ### 自定义菜单
 

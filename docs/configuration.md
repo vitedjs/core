@@ -21,6 +21,7 @@ export default defineConfig({
     description: 'Project documentation',
     keywords: ['project', 'documentation'],
     supportedLocales: ['en', 'zh'],
+    siteURL: 'https://example.com/docs',
     theme: '@vited/theme-mantine',
   },
 });
@@ -33,14 +34,15 @@ configuration guide](https://vite.dev/config/).
 
 ## Vited options
 
-| Option             | Description                                                                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`            | Site title. Defaults to the `name` in `package.json`, or `Vited documentation` if no package name is available.                                                              |
-| `description`      | HTML description metadata. Defaults to the `description` in `package.json`.                                                                                                  |
-| `keywords`         | HTML keywords as an array of strings. Defaults to `keywords` in `package.json`.                                                                                              |
-| `supportedLocales` | Locale codes recognized in filenames such as `guide.zh.md`. The first locale is the default and uses unprefixed routes. If omitted, locales are inferred from the documents. |
-| `theme`            | Theme package to render the site. Defaults to `@vited/theme-mantine`.                                                                                                        |
-| `menu`             | Sidebar menu entries. If omitted, the menu is generated from the documentation pages.                                                                                        |
+| Option             | Description                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `title`            | Site title. Defaults to the `name` in `package.json`, or `Vited documentation` if no package name is available.                                                                                                                                  |
+| `description`      | HTML description metadata. Defaults to the `description` in `package.json`.                                                                                                                                                                      |
+| `keywords`         | HTML keywords as an array of strings. Defaults to `keywords` in `package.json`.                                                                                                                                                                  |
+| `supportedLocales` | Locale codes recognized in filenames such as `guide.zh.md`. The first locale is the default and uses unprefixed routes. If omitted, locales are inferred from the documents.                                                                     |
+| `siteURL`          | Public URL of the deployed site, including the base path, for example `https://example.com/docs/`. Absolute page URLs in `sitemap.xml` are built from it. Falls back to the `SITE_URL` environment variable; no sitemap is generated without it. |
+| `theme`            | Theme package to render the site. Defaults to `@vited/theme-mantine`.                                                                                                                                                                            |
+| `menu`             | Sidebar menu entries. If omitted, the menu is generated from the documentation pages.                                                                                                                                                            |
 
 ### Custom menu
 

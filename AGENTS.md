@@ -44,6 +44,7 @@ export default defineConfig({
     description: 'Project documentation',
     keywords: ['project', 'documentation'],
     supportedLocales: ['en', 'zh'],
+    siteURL: 'https://example.com',
     theme: '@vited/theme-mantine',
   },
 });
@@ -63,6 +64,7 @@ settings under `docs`; do not add a separate `docs.root` option.
 | `description`      | HTML description. Defaults to `package.json`'s `description`.                                                                                                                        |
 | `keywords`         | HTML keywords as an array of strings. Defaults to `package.json`'s `keywords`.                                                                                                       |
 | `supportedLocales` | Locale codes recognized in file-name suffixes, for example `guide.zh.md`. The first locale is the default and has no locale prefix. If omitted, locales are inferred from documents. |
+| `siteURL`          | Public URL of the deployed site, for example `https://example.com/docs/`. Absolute page URLs in `sitemap.xml` are built from it. Falls back to the `SITE_URL` environment variable.  |
 | `theme`            | Installed theme package name; defaults to `@vited/theme-mantine`.                                                                                                                    |
 | `menu`             | Optional sidebar entries. If omitted, the menu is generated from documents.                                                                                                          |
 
@@ -71,8 +73,9 @@ or MDX source file, `link` for an external URL, `flag` (`experimental`, `new`,
 or `deprecated`), `children` for nesting, and `divider: true`.
 
 Other common Vite settings remain top-level. Use `base` for a deployment path
-prefix. Production output goes to `docs_dist` by default; `build.outDir`
-overrides that destination.
+prefix. When `docs.siteURL` or `SITE_URL` is set, the build also writes
+`sitemap.xml` with the URL of every page. Production output goes to `docs_dist`
+by default; `build.outDir` overrides that destination.
 
 ## Documents
 

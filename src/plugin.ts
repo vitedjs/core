@@ -24,6 +24,7 @@ import {
   resolveLocales,
 } from './routing';
 import { createSearchIndex } from './search-index';
+import { createSitemap, resolveSiteURL } from './sitemap';
 import {
   clientModuleId,
   createClientModule,
@@ -153,6 +154,15 @@ export function vitedPlugin(docs: DocsConfig = {}): Plugin {
           favicon: faviconLink,
           emitFile: (fileName, source) => this.emitFile({ type: 'asset', fileName, source }),
         });
+
+        const siteURL = resolveSiteURL(docs);
+        if (siteURL) {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'sitemap.xml',
+            source: createSitemap(pages, resolveLocales(pages, docs.supportedLocales), siteURL),
+          });
+        }
       },
     },
     transformIndexHtml: {

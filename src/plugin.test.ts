@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import { existsSync } from 'node:fs';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { get } from 'node:http';
 import os from 'node:os';
@@ -124,6 +125,7 @@ describe('vitedPlugin()', () => {
       expect(html).not.toContain('<h1>Body is client-rendered</h1>');
       expect(html).not.toContain('rel="icon"');
       expect(html).not.toContain('favicon.svg');
+      expect(existsSync(path.join(output, 'sitemap.xml'))).toBe(false);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -408,6 +410,7 @@ describe('vitedPlugin()', () => {
           createMdxPlugin(),
           vitedPlugin({
             supportedLocales: ['en', 'zh'],
+            siteURL: 'https://example.com/docs-site',
             theme: path.join(root, 'theme.mjs'),
           }),
         ],
@@ -430,6 +433,7 @@ describe('vitedPlugin()', () => {
       );
       const scripts = await collectJavaScript(output);
       const bundle = scripts.join('\n');
+      const sitemap = await readFile(path.join(output, 'sitemap.xml'), 'utf8');
 
       expect(html).toContain('href="/docs-site/favicon.png"');
       expect(await readFile(path.join(output, 'favicon.png'))).toEqual(projectFavicon);
@@ -480,6 +484,11 @@ describe('vitedPlugin()', () => {
       expect(bundle).not.toContain('./foo/bar/README.md');
       expect(bundle).toContain('../no-frontmatter#heading');
       expect(bundle).toContain('https://example.com/guide.md');
+      expect(sitemap).toContain('<loc>https://example.com/docs-site/</loc>');
+      expect(sitemap).toContain('<loc>https://example.com/docs-site/code/</loc>');
+      expect(sitemap).toContain('<loc>https://example.com/docs-site/guide/no-frontmatter/</loc>');
+      expect(sitemap).toContain('<loc>https://example.com/docs-site/zh/guide/start/</loc>');
+      expect(sitemap).not.toContain('index.html');
       expect(bundle).not.toContain('dangerouslySetInnerHTML');
       expect(bundle).not.toContain('<h1>Documentation home</h1>');
     } finally {

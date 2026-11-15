@@ -8,6 +8,7 @@ export default defineConfig({
   docs: {
     title: 'Vited Core',
     supportedLocales: ['en', 'zh'],
+    siteURL: 'https://vitedjs.github.io/core',
     theme: '@vited/theme-mantine',
   },
 });

@@ -37,6 +37,13 @@ export interface DocsConfig {
   /** Locales recognized in document filenames such as `intro.zh.md`. */
   supportedLocales?: string[];
   /**
+   * Public URL of the deployed site, including the base path, such as `https://example.com/docs/`.
+   * Absolute page URLs in `sitemap.xml` are built from it.
+   *
+   * Falls back to the `SITE_URL` environment variable. No sitemap is generated when neither is set.
+   */
+  siteURL?: string;
+  /**
    * Theme package whose default export is a React component.
    *
    * @default '@vited/theme-mantine'

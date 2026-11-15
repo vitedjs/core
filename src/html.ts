@@ -245,6 +245,16 @@ export function applyPageMetadata(
 }
 
 export function getPageOutputPath(page: DocumentPage, locales: string[]): string {
+  return path.posix.join(...getPageSegments(page, locales), 'index.html');
+}
+
+/** Page path relative to the site root, with a trailing slash, such as `zh/guide/start/`. */
+export function getPageURLPath(page: DocumentPage, locales: string[]): string {
+  const segments = getPageSegments(page, locales).map((segment) => encodeURIComponent(segment));
+  return segments.length > 0 ? `${segments.join('/')}/` : '';
+}
+
+function getPageSegments(page: DocumentPage, locales: string[]): string[] {
   const defaultLocale = locales[0] ?? 'en';
   const segments = page.path
     .split('/')
@@ -253,7 +263,7 @@ export function getPageOutputPath(page: DocumentPage, locales: string[]): string
   if (page.locale.toLowerCase() !== defaultLocale.toLowerCase()) {
     segments.unshift(page.locale);
   }
-  return path.posix.join(...segments, 'index.html');
+  return segments;
 }
 
 /** Site title, falling back to the package name like the generated HTML shell. */
